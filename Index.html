@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nivesh Yatra — Brokerage Demo</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <!-- Local stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Chart.js (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <div class="logo">📈</div>
+      <div>
+        <div class="company-name">Nivesh Yatra</div>
+        <div class="slogan">Turning dreams into Assets.</div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button id="tabStocks" class="tab active">Stocks</button>
+    <button id="tabMF" class="tab">Mutual Funds</button>
+    <button id="tabPortfolio" class="tab">Portfolio</button>
+  </nav>
+
+  <main class="container">
+    <!-- Stocks -->
+    <section id="stocksTab" class="panel">
+      <h2>Buy Stocks</h2>
+      <div id="stockList" class="list"></div>
+    </section>
+
+    <!-- Mutual funds -->
+    <section id="mfTab" class="panel hidden">
+      <h2>Mutual Funds</h2>
+      <div id="mfList" class="list"></div>
+    </section>
+
+    <!-- Portfolio -->
+    <section id="portfolioTab" class="panel hidden">
+      <h2>Your Portfolio</h2>
+      <div id="portfolioSummary" class="summary"></div>
+      <div id="portfolioList" class="list"></div>
+      <div id="details"></div>
+    </section>
+  </main>
+
+  <!-- App script -->
+  <script src="script.js"></script>
+</body>
+</html>
