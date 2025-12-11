@@ -36,27 +36,22 @@
     </section>
 
     <h2>Buy Stocks</h2>
-
-    <!-- Stocks panel -->
-    <div id="ny_stocks_panel">
-      <div id="stocksList"></div>
+    <div id="ny_stocks_panel" class="panel">
+      <div id="stocksList" class="list"></div>
     </div>
 
-    <!-- Funds panel -->
-    <div id="ny_funds_panel" class="hidden">
+    <div id="ny_funds_panel" class="panel hidden">
       <h2>Mutual Funds</h2>
-      <div id="fundsList"></div>
+      <div id="fundsList" class="list"></div>
     </div>
 
-    <!-- Portfolio panel -->
-    <div id="ny_portfolio_panel" class="hidden">
+    <div id="ny_portfolio_panel" class="panel hidden">
       <h2>Your Portfolio</h2>
       <div id="portfolioList"></div>
       <div id="portfolioChartWrap" style="margin-top:12px"></div>
     </div>
   </main>
 
-  <!-- bottom nav -->
   <nav class="ny-bottom-nav" role="navigation" aria-label="main">
     <button id="nav_stocks" class="ny-nav-btn">Stocks</button>
     <button id="nav_funds"  class="ny-nav-btn">Funds</button>
