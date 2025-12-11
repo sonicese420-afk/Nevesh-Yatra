@@ -1,4 +1,4 @@
-// script.js - full app but with full-page detail takeover
+// script.js - improved init + quantity + top stats + toast + guaranteed initial render
 (() => {
   const stocks = [
     { symbol: 'RELIANCE', name: 'Reliance Industries Ltd' },
@@ -10,7 +10,7 @@
   ];
 
   function randPrice(min, max) { return +(Math.random() * (max-min) + min).toFixed(2); }
-  function getLivePrices(){ const p={}; stocks.forEach(s=>{ const min=100+Math.random()*200; const max=min + (1200*Math.random()); p[s.symbol]=randPrice(min,max);}); return p; }
+  function getLivePrices(){ const p={}; stocks.forEach(s=>{ const min=200+Math.random()*400; const max=min + (900*Math.random()); p[s.symbol]=randPrice(min,max);}); return p; }
 
   const LS_KEY = 'nv_portfolio_v1';
   function loadPortfolio(){ try{return JSON.parse(localStorage.getItem(LS_KEY))||{};}catch(e){return{};} }
@@ -37,6 +37,10 @@
   const detailPL = document.getElementById('detailPL');
   const historyCanvas = document.getElementById('historyChart');
   const timesBtns = document.querySelectorAll('.time');
+  const qtyInput = document.getElementById('qtyInput');
+  const detailTopStats = document.getElementById('detailTopStats');
+  const toast = document.getElementById('toast');
+
   const btnBuy = document.getElementById('btnBuy');
   const btnSell = document.getElementById('btnSell');
   const btnSip = document.getElementById('btnSip');
@@ -50,6 +54,13 @@
 
   function fmtRs(n){ return '₹' + (Math.round(n*100)/100).toLocaleString('en-IN'); }
   function fmtPerc(p){ return (Math.round(p*100)/100).toFixed(2) + '%'; }
+
+  function showToast(text, timeout=1800){
+    toast.textContent = text;
+    toast.classList.remove('hidden');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=> toast.classList.add('hidden'), timeout);
+  }
 
   function renderStocksList(){
     pageTitle.textContent = 'Buy Stocks';
@@ -128,7 +139,7 @@
     });
     totalAmountEl.textContent = fmtRs(total);
     holdingsCountEl.textContent = 'Holdings: ' + holdings;
-    dayChangeEl.textContent = (pnl>=0? '＋':'') + fmtRs(pnl) + ` (${ total ? fmtPerc((pnl/Math.max(total,1))*100) : '0.00%'})`;
+    dayChangeEl.textContent = (pnl>=0 ? '＋':'') + fmtRs(pnl) + ` (${ total ? fmtPerc((pnl/Math.max(total,1))*100) : '0.00%'})`;
 
     if(Object.keys(portfolio).filter(s=>portfolio[s].qty>0).length === 0){
       const info = document.createElement('div'); info.className='card'; info.style.margin='12px';
@@ -160,6 +171,14 @@
       detailPL.style.color = '';
     }
 
+    // fill top stats with mock values
+    detailTopStats.innerHTML = `
+      <div class="stat"><div class="muted">Volume</div><div>${Math.floor(Math.random()*1000000).toLocaleString()}</div></div>
+      <div class="stat"><div class="muted">1D Low / High</div><div>${fmtRs(price-40)} / ${fmtRs(price+40)}</div></div>
+      <div class="stat"><div class="muted">Mkt Cap</div><div>₹${(Math.floor(Math.random()*2000000)).toLocaleString()} Cr</div></div>
+    `;
+
+    qtyInput.value = 1;
     // build chart with currentRange
     buildChart(symbol, currentRange);
   }
@@ -207,31 +226,31 @@
     });
   });
 
-  // buy/sell/sip actions (simple)
+  // buy/sell/sip actions
   btnBuy.addEventListener('click', ()=> {
     if(!currentStock) return;
-    const qty = 1; // simplify: default 1 for now
+    const qty = Math.max(1, parseInt(qtyInput.value) || 1);
     const price = livePrices[currentStock] || randPrice(100,1000);
     const prev = portfolio[currentStock] || { qty:0, avgPrice:0 };
     const newQty = prev.qty + qty;
     const newAvg = ((prev.avgPrice * prev.qty) + price * qty) / newQty;
     portfolio[currentStock] = { qty:newQty, avgPrice:+newAvg.toFixed(2) };
     savePortfolio(portfolio); refreshAll();
-    alert(`Bought ${qty} ${currentStock} @ ${fmtRs(price)}`);
+    showToast(`Bought ${qty} ${currentStock} @ ${fmtRs(price)}`);
   });
   btnSell.addEventListener('click', ()=> {
     if(!currentStock) return;
     const prev = portfolio[currentStock] || { qty:0, avgPrice:0 };
-    const qty = Math.min(1, prev.qty);
-    if(!prev || prev.qty < 1) { alert('No holdings to sell'); return; }
+    const qty = Math.min(Math.max(1, parseInt(qtyInput.value)||1), prev.qty || 0);
+    if(!prev || prev.qty < 1) { showToast('No holdings to sell'); return; }
     const price = livePrices[currentStock] || randPrice(100,1000);
     const remaining = prev.qty - qty;
     if(remaining === 0) delete portfolio[currentStock];
     else portfolio[currentStock] = { qty: remaining, avgPrice: prev.avgPrice };
     savePortfolio(portfolio); refreshAll();
-    alert(`Sold ${qty} ${currentStock} @ ${fmtRs(price)}`);
+    showToast(`Sold ${qty} ${currentStock} @ ${fmtRs(price)}`);
   });
-  btnSip.addEventListener('click', ()=> alert('SIP action (placeholder)'));
+  btnSip.addEventListener('click', ()=> showToast('SIP action (placeholder)'));
 
   // tabs and render control
   function activateTab(tab){
@@ -265,10 +284,9 @@
     holdingsCountEl.textContent = 'Holdings: ' + holdings;
     dayChangeEl.textContent = (pnl>=0 ? '＋':'') + fmtRs(pnl) + ` (${ total? fmtPerc((pnl/Math.max(total,1))*100) : '0.00%'})`;
 
-    // re-render current tab
-    const active = document.querySelector('.tab.active')?.dataset?.tab || 'stocks';
-    if(active==='stocks') renderStocksList();
-    else if(active==='funds') renderFundsList();
+    const activeTab = document.querySelector('.tab.active')?.dataset?.tab || 'stocks';
+    if(activeTab==='stocks') renderStocksList();
+    else if(activeTab==='funds') renderFundsList();
     else renderPortfolio();
   }
 
@@ -283,8 +301,8 @@
 
   // init
   function init(){
-    livePrices = getLivePrices();
-    refreshAll();
+    // guarantee initial tab/render state
+    activateTab('stocks');
     // periodic pseudo-live updates
     setInterval(()=> {
       livePrices = getLivePrices();
