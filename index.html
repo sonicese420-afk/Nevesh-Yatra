@@ -5,71 +5,82 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Nivesh Yatra — Brokerage Demo</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <!-- Google font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;800&display=swap" rel="stylesheet">
+
+  <!-- local CSS -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header class="site-header">
-    <div class="brand">
-      <div class="logo" aria-hidden="true">
-        <!-- small SVG logo -->
-        <svg viewBox="0 0 64 64" width="44" height="44" xmlns="http://www.w3.org/2000/svg" fill="none">
-          <rect x="4" y="10" width="56" height="44" rx="6" fill="#ffffff10"/>
-          <path d="M14 40 L28 20 L38 30 L50 14" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+    <a href="#" class="brand-link" id="brandBtn" title="Home (Stocks)">
+      <img src="logo.png" alt="Nivesh Yatra" class="logo">
       <div class="brand-text">
         <div class="company-name">Nivesh Yatra</div>
         <div class="slogan">Turning dreams into Assets.</div>
       </div>
-    </div>
+    </a>
 
-    <div class="header-actions">
-      <button id="themeToggle" class="icon-btn" title="Theme">🌓</button>
+    <div class="header-icons">
+      <button id="toggleTheme" class="icon-btn" title="Toggle theme">🌗</button>
       <button id="notifBtn" class="icon-btn" title="Notifications">🔔</button>
     </div>
   </header>
 
-  <main class="container">
-    <section class="summary card">
-      <div>
+  <main class="app">
+    <!-- Assets card -->
+    <section class="assets-card" id="assetsCard">
+      <div class="assets-left">
         <div class="label">MY ASSETS</div>
-        <div id="totalAmount" class="big">₹0</div>
-        <div id="oneDayChange" class="muted">1 Day Change: ₹0 (0%)</div>
-        <div id="holdingsCount" class="muted" style="margin-top:6px;">Holdings: 0</div>
+        <div class="total" id="totalAssets">₹0</div>
+        <div class="day-change" id="dayChange">1 Day Change: ₹0 (0.00%)</div>
+        <div class="holdings-info" id="holdCount">Holdings: 0</div>
       </div>
-      <div>
-        <button id="toggleHide" class="btn ghost">👁</button>
+      <div class="assets-right">
+        <button id="eyeBtn" class="icon-btn">👁️</button>
       </div>
     </section>
 
-    <section id="stocksPanel" class="panel">
-      <h2 class="panel-title">Buy Stocks</h2>
-      <div id="stockList" class="list"></div>
-    </section>
+    <!-- content panels -->
+    <section class="container">
+      <div id="stocksPanel" class="panel">
+        <h2>Buy Stocks</h2>
+        <div id="stocksList" class="list"></div>
+      </div>
 
-    <section id="fundsPanel" class="panel hidden">
-      <h2 class="panel-title">Mutual Funds</h2>
-      <div id="fundList" class="list"></div>
-    </section>
+      <div id="fundsPanel" class="panel hidden">
+        <h2>Mutual Funds</h2>
+        <div id="fundsList" class="list"></div>
+      </div>
 
-    <section id="portfolioPanel" class="panel hidden">
-      <h2 class="panel-title">Your Portfolio</h2>
-      <div id="portfolioSummary" class="card small"></div>
-      <div id="portfolioList" class="list"></div>
-      <div id="detailArea"></div>
+      <div id="portfolioPanel" class="panel hidden">
+        <h2>Your Portfolio</h2>
+        <div id="portfolioList" class="list empty">No holdings yet.</div>
+      </div>
     </section>
   </main>
 
-  <nav class="bottom-nav" role="navigation" aria-label="main">
-    <button class="nav-btn active" data-target="stocksPanel">📈<span>Stocks</span></button>
-    <button class="nav-btn" data-target="fundsPanel">📊<span>Funds</span></button>
-    <button class="nav-btn" data-target="portfolioPanel">🧾<span>Portfolio</span></button>
+  <!-- bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="stocks">📈<span>Stocks</span></button>
+    <button class="nav-btn" data-tab="funds">📊<span>Funds</span></button>
+    <button class="nav-btn" data-tab="portfolio">🧾<span>Portfolio</span></button>
   </nav>
 
-  <div id="toast" class="toast hidden"></div>
+  <!-- Modal for chart / details -->
+  <div id="modal" class="modal hidden" role="dialog" aria-hidden="true">
+    <div class="modal-content">
+      <button class="close-modal" id="closeModal">✕</button>
+      <h3 id="modalTitle">Holding</h3>
+      <canvas id="holdingChart" height="220"></canvas>
+      <div class="modal-stats" id="modalStats"></div>
+    </div>
+  </div>
 
+  <!-- Local JS -->
   <script src="script.js"></script>
 </body>
 </html>
