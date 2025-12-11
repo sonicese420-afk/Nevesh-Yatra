@@ -40,12 +40,12 @@
 
     <h1 class="title" id="pageTitle">Buy Stocks</h1>
 
-    <div id="list" class="list"></div>
+    <div id="list" class="list" aria-live="polite"></div>
   </main>
 
   <!-- bottom nav -->
   <nav class="bottom-nav" id="bottomNav">
-    <button class="tab active" data-tab="stocks" id="tab-stocks">📈<span>Stocks</span></button>
+    <button class="tab" data-tab="stocks" id="tab-stocks">📈<span>Stocks</span></button>
     <button class="tab" data-tab="funds" id="tab-funds">📊<span>Funds</span></button>
     <button class="tab" data-tab="portfolio" id="tab-portfolio">📁<span>Portfolio</span></button>
   </nav>
@@ -65,19 +65,24 @@
     </div>
 
     <div class="detail-body">
+      <div class="detail-stats card" id="detailTopStats">
+        <!-- top stats (volume, 1D low/high, mktcap) will be injected here -->
+      </div>
+
       <div class="chart-wrap card">
         <canvas id="historyChart"></canvas>
       </div>
 
-      <div class="times-wrap">
+      <div class="times-wrap" role="tablist" aria-label="time ranges">
         <button class="time active" data-range="1d">1D</button>
         <button class="time" data-range="1w">1W</button>
         <button class="time" data-range="1m">1M</button>
         <button class="time" data-range="6m">6M</button>
       </div>
 
-      <div class="detail-stats card" id="detailStats">
-        <!-- optional stats rows -->
+      <div class="card order-area" id="orderArea">
+        <label for="qtyInput">Qty</label>
+        <input id="qtyInput" type="number" min="1" value="1" />
       </div>
     </div>
 
@@ -88,6 +93,9 @@
       <button id="btnSip" class="btn btn-outline">SIP</button>
     </div>
   </div>
+
+  <!-- toast -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
   <script src="script.js" defer></script>
 </body>
