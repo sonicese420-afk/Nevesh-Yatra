@@ -1,11 +1,11 @@
-/* script.js - updated
-   Shows ▲/▼ on cards only when the item is owned in portfolio
+/* script.js - simplified list UI (no buy buttons, no percent chips on cards)
+   Cards are clickable -> openItemDetail(name,type) placeholder for future modal.
 */
 
-/* small helpers */
+/* helpers */
 function random(a,b){ return +(Math.random()*(b-a)+a).toFixed(2) }
 
-/* sample data (symbol map) */
+/* data */
 const stocks = {
   "Tata Motors":"TATAMOTORS",
   "Adani Green":"ADANIGREEN",
@@ -24,7 +24,7 @@ const mutualFunds = [
   "SBI Large Cap Fund"
 ];
 
-/* current prices (simulate) */
+/* simulated current prices */
 const currentPrices = {};
 Object.keys(stocks).forEach(name => currentPrices[name] = random(200,2000));
 
@@ -32,7 +32,7 @@ Object.keys(stocks).forEach(name => currentPrices[name] = random(200,2000));
 let portfolio = JSON.parse(localStorage.getItem('ny_portfolio')) || { stocks:{}, funds:{} };
 function save(){ localStorage.setItem('ny_portfolio', JSON.stringify(portfolio)) }
 
-/* cached DOM */
+/* DOM refs */
 const stocksList = document.getElementById('stocksList');
 const fundsList  = document.getElementById('fundsList');
 const portfolioList = document.getElementById('portfolioList');
@@ -49,72 +49,65 @@ const portPanel   = document.getElementById('ny_portfolio_panel');
 
 let portfolioChart = null;
 
-/* tiny logo generator (initials) */
+/* small logo (initials) */
 function makeLogoFor(name){
   const initials = name.split(' ').slice(0,2).map(s=>s[0]).join('').toUpperCase();
   const div = document.createElement('div'); div.className='item-logo'; div.textContent = initials;
   return div;
 }
 
-/* Render a single stock row that matches your mock */
+/* placeholder detail opener (replace with real modal later) */
+function openItemDetail(name, type){
+  // For now just show a toast. Later this opens your buy/sell/SIP modal.
+  showToast(`Open ${type} detail: ${name}`);
+}
+
+/* Render stocks list (no buy button, no percent chip) */
 function renderStocks(){
   stocksList.innerHTML = '';
   Object.keys(stocks).forEach(name=>{
     const sym = stocks[name];
     const price = currentPrices[name] = currentPrices[name] || random(200,2000);
-    const pct = random(-2.5,2.5); // simulated percent (we will only display if owned)
 
-    const card = document.createElement('div'); card.className='list-item';
+    const card = document.createElement('div'); card.className='list-item clickable';
+    card.dataset.name = name; card.dataset.type = 'stock';
+    card.onclick = ()=> openItemDetail(name,'stock');
 
     const left = document.createElement('div'); left.className='item-left';
     left.appendChild(makeLogoFor(name));
-
     const meta = document.createElement('div'); meta.className='item-meta';
     const title = document.createElement('div'); title.className='item-title'; title.textContent = name;
     const badgeRow = document.createElement('div'); badgeRow.className='item-badge';
     const badge = document.createElement('span'); badge.className='badge-chip'; badge.textContent = 'Stock';
     const sib = document.createElement('span'); sib.style.color='var(--muted)'; sib.style.fontSize='12px'; sib.textContent = ` | ${sym}`;
     badgeRow.appendChild(badge); badgeRow.appendChild(sib);
-
     meta.appendChild(title); meta.appendChild(badgeRow);
     left.appendChild(meta);
 
     const rightBlock = document.createElement('div'); rightBlock.className='right-block';
-
-    const controls = document.createElement('div'); controls.className='controls';
-    const qty = document.createElement('input'); qty.type='number'; qty.min=1; qty.value=1; qty.className='qty';
-    const buy = document.createElement('button'); buy.className='btn-buy'; buy.textContent='Buy';
-    buy.onclick = ()=> buyStock(name, Number(qty.value), price);
-    controls.appendChild(qty); controls.appendChild(buy);
-
     const priceArea = document.createElement('div'); priceArea.style.textAlign='right';
     const priceEl = document.createElement('div'); priceEl.className='item-price'; priceEl.textContent = `₹${price}`;
     priceArea.appendChild(priceEl);
 
-    /* ONLY show pct chip if user OWNS this stock */
-    if(portfolio.stocks && portfolio.stocks[name]){
-      const pctEl = document.createElement('div'); pctEl.className='pct-chip ' + (pct>=0? 'pct-up':'pct-down');
-      pctEl.textContent = `${pct>=0? '▲':'▼'} ${Math.abs(pct).toFixed(2)}%`;
-      priceArea.appendChild(pctEl);
-    }
+    /* previously we showed pct chip here. removed per request.
+       Owned-only arrow logic will be displayed in portfolio panel instead. */
 
-    rightBlock.appendChild(controls);
     rightBlock.appendChild(priceArea);
-
-    card.appendChild(left);
-    card.appendChild(rightBlock);
+    card.appendChild(left); card.appendChild(rightBlock);
     stocksList.appendChild(card);
   });
 }
 
-/* Render funds — similar layout with 'Fund' badge, pct only if owned */
+/* Render funds list (no add button, no percent chip) */
 function renderFunds(){
   fundsList.innerHTML = '';
   mutualFunds.forEach(name=>{
     const nav = random(50,350);
-    const pct = random(-1.5,1.5);
 
-    const card = document.createElement('div'); card.className='list-item';
+    const card = document.createElement('div'); card.className='list-item clickable';
+    card.dataset.name = name; card.dataset.type = 'fund';
+    card.onclick = ()=> openItemDetail(name,'fund');
+
     const left = document.createElement('div'); left.className='item-left';
     left.appendChild(makeLogoFor(name));
     const meta = document.createElement('div'); meta.className='item-meta';
@@ -127,31 +120,18 @@ function renderFunds(){
     left.appendChild(meta);
 
     const rightBlock = document.createElement('div'); rightBlock.className='right-block';
-    const controls = document.createElement('div'); controls.className='controls';
-    const qty = document.createElement('input'); qty.type='number'; qty.min=1; qty.value=1; qty.className='qty';
-    const add = document.createElement('button'); add.className='btn-buy'; add.textContent='Add';
-    add.onclick = ()=> buyFund(name, Number(qty.value), nav);
-    controls.appendChild(qty); controls.appendChild(add);
-
     const priceArea = document.createElement('div'); priceArea.style.textAlign='right';
     const priceEl = document.createElement('div'); priceEl.className='item-price'; priceEl.textContent = `₹${nav}`;
     priceArea.appendChild(priceEl);
 
-    /* ONLY show pct chip if user OWNS this fund */
-    if(portfolio.funds && portfolio.funds[name]){
-      const pctEl = document.createElement('div'); pctEl.className='pct-chip ' + (pct>=0? 'pct-up':'pct-down');
-      pctEl.textContent = `${pct>=0? '▲':'▼'} ${Math.abs(pct).toFixed(2)}%`;
-      priceArea.appendChild(pctEl);
-    }
-
-    rightBlock.appendChild(controls); rightBlock.appendChild(priceArea);
     card.appendChild(left); card.appendChild(rightBlock);
+    rightBlock.appendChild(priceArea);
     fundsList.appendChild(card);
   });
 }
 
-/* buy handlers (averaging) */
-function buyStock(name, qty, price){
+/* internal buy helpers (still kept, modal will call these later) */
+function buyStockDirect(name, qty, price){
   if(qty<=0) return;
   if(!portfolio.stocks[name]) portfolio.stocks[name] = { qty:0, price:0 };
   const r = portfolio.stocks[name];
@@ -161,7 +141,7 @@ function buyStock(name, qty, price){
   r.qty = newQty; r.price = +(newTotal / newQty).toFixed(2);
   save(); renderPortfolio(); renderStocks(); showToast(`${qty} × ${name} added`);
 }
-function buyFund(name, units, nav){
+function buyFundDirect(name, units, nav){
   if(units<=0) return;
   if(!portfolio.funds[name]) portfolio.funds[name] = { units:0, price:0, nav };
   const r = portfolio.funds[name];
@@ -172,7 +152,7 @@ function buyFund(name, units, nav){
   save(); renderPortfolio(); renderFunds(); showToast(`${units} units of ${name} added`);
 }
 
-/* portfolio rendering with up/down arrow per holding */
+/* portfolio rendering — this shows owned items with arrows & pl info */
 function renderPortfolio(){
   portfolioList.innerHTML = '';
   let totalValue = 0, totalCost = 0;
@@ -198,8 +178,7 @@ function renderPortfolio(){
     right.innerHTML = `<div>₹${value.toFixed(2)}</div>`;
     const diff = +(value - cost);
     const arrow = document.createElement('span'); arrow.className='port-arrow'; arrow.textContent = diff >=0 ? '▲' : '▼';
-    arrow.style.color = diff >=0 ? 'var(--success)' : 'var(--danger)';
-    arrow.style.marginLeft = '8px';
+    arrow.style.color = diff >=0 ? 'var(--success)' : 'var(--danger)'; arrow.style.marginLeft='8px';
     const pl = document.createElement('div'); pl.textContent = `${diff>=0?'+':'-'}₹${Math.abs(diff).toFixed(2)}`; pl.style.color = diff>=0 ? 'var(--success)':'var(--danger)';
     right.appendChild(arrow); right.appendChild(pl);
 
@@ -250,7 +229,7 @@ function renderPortfolio(){
   renderPortfolioChart(totalValue);
 }
 
-/* Chart: 6 month */
+/* 6 month chart */
 function renderPortfolioChart(totalValue){
   const labels = [];
   for(let i=5;i>=0;i--){
@@ -296,7 +275,7 @@ function activateNav(tab){
 /* toast */
 function showToast(txt){
   const t = document.createElement('div'); t.textContent = txt;
-  Object.assign(t.style,{position:'fixed',left:'50%',transform:'translateX(-50%)',bottom:'120px',background:'rgba(0,0,0,0.75)',padding:'8px 14px',borderRadius:'10px',zIndex:999});
+  Object.assign(t.style,{position:'fixed',left:'50%',transform:'translateX(-50%)',bottom:'120px',background:'rgba(0,0,0,0.75)',color:'#fff',padding:'8px 14px',borderRadius:'10px',zIndex:999});
   document.body.appendChild(t); setTimeout(()=> t.remove(),1400);
 }
 
@@ -307,5 +286,5 @@ function init(){
 }
 init();
 
-/* expose for debug */
-window._ny = { portfolio, renderPortfolio, renderStocks, renderFunds, currentPrices };
+/* debug hook */
+window._ny = { portfolio, renderPortfolio, renderStocks, renderFunds, currentPrices, buyStockDirect, buyFundDirect };
