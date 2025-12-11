@@ -1,21 +1,17 @@
-/* safer-script.js
-   - Single-file replacement (safe to re-run)
-   - Avoids duplicating headers/nav/modal
-   - Removes any previous auto-injected UI created by this script
-   - Keeps portfolio + stocks + funds + Chart.js (maintainAspectRatio:false)
-*/
+// script.js - simplified, robust UI, portfolio + charts
+// Requires Chart.js (you already include it in index.html).
 
-/* ---------- Config & Data ---------- */
-const STORAGE_KEY = "ny_portfolio";
+/* ---------- Data ---------- */
 const stocks = {
-  "Tata Motors": randomBetween(600, 950),
-  "Adani Green": randomBetween(820, 1500),
-  "Wipro": randomBetween(220, 360),
-  "MRF": randomBetween(90000, 150000),
-  "Reliance": randomBetween(1400, 1800),
-  "HDFC": randomBetween(1100, 1600),
-  "Affle 3i Ltd": randomBetween(100, 200)
+  "Tata Motors": random(700, 950),
+  "Adani Green": random(900, 1500),
+  "Wipro": random(220, 360),
+  "MRF": random(90000, 150000),
+  "Reliance": random(1300, 1700),
+  "HDFC": random(1100, 1600),
+  "Affle 3i Ltd": random(80, 240)
 };
+
 const mutualFunds = [
   "Edelweiss Nifty Midcap150 Momentum 50 Index Fund",
   "HDFC Mid Cap Fund",
@@ -27,373 +23,300 @@ const mutualFunds = [
   "HDFC Large Cap Fund"
 ];
 
-/* ---------- Utilities ---------- */
-function randomBetween(a,b){return +(Math.random()*(b-a)+a).toFixed(2);}
-function formatCurrency(n){ return "₹"+Number(n).toLocaleString(); }
-function loadPortfolio(){ try{ const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):{stocks:{},funds:{}} }catch(e){return {stocks:{},funds:{}}}}
-function savePortfolio(p){ localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); }
+// Local storage portfolio key
+const STORAGE_KEY = 'ny_portfolio';
 
-/* ---------- Clean previous injections (if any) ---------- */
-["ny_header","ny_main","ny_nav","ny_modal"].forEach(id=>{
-  const el=document.getElementById(id);
-  if(el && el.dataset && el.dataset.nyAuto == "true") el.remove();
-});
-
-/* ---------- Create or reuse core containers ---------- */
-function ensureContainer(id, tag="div", parent=document.body){
-  let el=document.getElementById(id);
-  if(!el){
-    el=document.createElement(tag);
-    el.id=id;
-    el.dataset.nyAuto="true"; // mark auto-injected so future runs can remove safely
-    parent.appendChild(el);
-  }
-  return el;
+/* ---------- Helpers ---------- */
+function random(a, b) {
+  return Math.round((Math.random() * (b - a) + a) * 100) / 100;
+}
+function fmt(v) {
+  return '₹' + Number(v).toLocaleString('en-IN', {maximumFractionDigits:2});
+}
+function getPortfolio() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {stocks:{}, funds:{}};
+  } catch(e){ return {stocks:{}, funds:{}}; }
+}
+function savePortfolio(p) { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); }
+function nowPriceFor(name, type='stock') {
+  // use base lists for stocks/funds
+  if(type === 'stock') return stocks[name] || random(100,1000);
+  // funds: give a pseudo NAV
+  return random(300, 2000);
 }
 
-const header = ensureContainer("ny_header","header", document.body);
-const main   = ensureContainer("ny_main","main", document.body);
-const nav    = ensureContainer("ny_nav","nav", document.body);
-const modalWrap = ensureContainer("ny_modal","div", document.body);
+/* ---------- UI nodes ---------- */
+const el = id => document.getElementById(id);
+const panels = {
+  stocks: el('ny_stocks_panel'),
+  funds: el('ny_funds_panel'),
+  portfolio: el('ny_portfolio_panel')
+};
+const navButtons = {
+  stocks: el('nav_stocks'),
+  funds: el('nav_funds'),
+  portfolio: el('nav_portfolio')
+};
+const assetsTotalEl = el('assetsTotal');
+const assetsPLEl = el('assetsPL');
+const assetsHoldingsEl = el('assetsCount');
 
-/* ---------- Apply minimal layout CSS (inline to avoid missing stylesheet) ---------- */
-(function injectStyle(){
-  const id="ny_injected_style";
-  if(document.getElementById(id)) return;
-  const s=document.createElement("style"); s.id=id;
-  s.textContent = `
-    #ny_header{padding:12px 16px;background:linear-gradient(180deg,#275a5f,#2e6b6f);color:#fff;display:flex;gap:12px;align-items:center;position:sticky;top:0;z-index:50}
-    #ny_header img{width:56px;height:56px;border-radius:10px;object-fit:cover}
-    #ny_assets_box{margin:14px 16px;padding:18px;background:rgba(255,255,255,0.04);border-radius:14px}
-    #ny_main{padding:6px 16px 84px 16px;min-height:60vh}
-    .ny-card{background:rgba(255,255,255,0.03);padding:14px;border-radius:12px;margin-bottom:12px}
-    .ny-bottom-nav{position:fixed;left:0;right:0;bottom:16px;display:flex;justify-content:space-around;gap:12px;padding:10px 16px;background:linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.55));backdrop-filter:blur(6px);border-radius:28px;margin:0 16px;z-index:60}
-    .ny-nav-btn{background:transparent;border:none;color:#fff;padding:8px 12px;border-radius:10px;min-width:72px}
-    .ny-nav-btn.active{background:rgba(255,255,255,0.06)}
-    .ny-card .buy-btn,.ny-card .add-btn{cursor:pointer}
-    #ny_modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:80;pointer-events:none}
-    #ny_modal .ny-modal-content{width:92%;max-width:760px;background:var(--card,#0b1820);border-radius:12px;padding:12px;pointer-events:auto}
-    #ny_modal .close-modal{float:right}
-    canvas{max-width:100%}
-  `;
-  document.head.appendChild(s);
-})();
-
-/* ---------- Portfolio state ---------- */
-let portfolio = loadPortfolio();
-
-/* ---------- Render helpers ---------- */
-function renderHeader(){
-  // if header already contains app HTML (maybe created manually), don't overwrite — but update logo if missing
-  if(header.innerHTML.trim()){
-    // attempt to ensure assets box present
-    let box = document.getElementById("assetsTotal");
-    if(!box){
-      const assetsBox = document.createElement("div");
-      assetsBox.id="ny_assets_box";
-      assetsBox.innerHTML = `<div id="assetsTotal">${formatCurrency(0)}</div><div id="dailyChange">1 Day Change: ₹0 (0.00%)</div><div id="assetsCount">Holdings: 0</div>`;
-      header.appendChild(assetsBox);
-    }
-    return;
-  }
-  header.innerHTML = `
-    <img id="ny_logo_img" src="${getLogoBlobURL()}" alt="logo"/>
-    <div>
-      <div style="font-weight:700;font-size:18px">Nivesh Yatra</div>
-      <div style="font-size:12px;opacity:.9">Turning dreams into Assets.</div>
-    </div>
-    <div style="margin-left:auto"></div>
-  `;
-  // assets box below header (in header area)
-  const assetsBox = document.createElement("div");
-  assetsBox.id = "ny_assets_box";
-  assetsBox.style.width = "100%";
-  assetsBox.innerHTML = `<div id="assetsTotal" style="font-size:22px;font-weight:700">${formatCurrency(0)}</div>
-                        <div id="dailyChange" style="opacity:.9">1 Day Change: ₹0 (0.00%)</div>
-                        <div id="assetsCount" style="opacity:.8">Holdings: 0</div>`;
-  header.appendChild(assetsBox);
+/* ---------- Renderers ---------- */
+function renderStocks() {
+  const wrapper = el('stocksList');
+  wrapper.innerHTML = '';
+  Object.keys(stocks).forEach(name => {
+    const price = nowPriceFor(name,'stock');
+    const card = document.createElement('div');
+    card.className = 'ny-card';
+    card.innerHTML = `
+      <div class="name">${name}</div>
+      <div class="price">${fmt(price)}</div>
+      <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
+        <input class="qty" type="number" min="1" value="1" data-name="${name}" data-type="stock">
+        <button class="buy-btn" data-action="buy" data-name="${name}" data-type="stock">Buy</button>
+      </div>
+    `;
+    wrapper.appendChild(card);
+  });
 }
 
-function renderBottomNav(){
-  // remove existing ny_nav children if present and created by us
-  while(nav.firstChild) nav.removeChild(nav.firstChild);
-  nav.className = "ny-bottom-nav";
-  nav.innerHTML = `
-    <button id="navStocks" class="ny-nav-btn">Stocks</button>
-    <button id="navFunds" class="ny-nav-btn">Funds</button>
-    <button id="navPortfolio" class="ny-nav-btn">Portfolio</button>
-  `;
-  // attach handlers
-  document.getElementById("navStocks").addEventListener("click", ()=> showPanel("stocks"));
-  document.getElementById("navFunds").addEventListener("click", ()=> showPanel("funds"));
-  document.getElementById("navPortfolio").addEventListener("click", ()=> showPanel("portfolio"));
+function renderFunds() {
+  const wrapper = el('fundsList');
+  wrapper.innerHTML = '';
+  mutualFunds.forEach(name => {
+    const nav = nowPriceFor(name,'fund');
+    const card = document.createElement('div');
+    card.className = 'ny-card';
+    card.innerHTML = `
+      <div class="name">${name}</div>
+      <div class="price">${fmt(nav)}</div>
+      <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
+        <input class="qty" type="number" min="1" value="1" data-name="${name}" data-type="fund">
+        <button class="add-btn" data-action="addFund" data-name="${name}" data-type="fund">Add Unit</button>
+      </div>
+    `;
+    wrapper.appendChild(card);
+  });
 }
 
-function getLogoBlobURL(){
-  // if host page provided img#ny_logo use it
-  const host = document.getElementById("ny_logo");
-  if(host && host.src) return host.src;
-  // If you have uploaded file at known path, change the path here. Fallback a teal svg.
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><rect width='100%' height='100%' fill='#476d75' rx='20'/><g fill='white' transform='translate(50,70)'><path d='M120 120 l50 -60 l40 20 l-50 60 z' opacity='.95'/></g></svg>`;
-  return `data:image/svg+xml;base64,${btoa(svg)}`;
-}
-
-/* ---------- Panel rendering ---------- */
-function clearMain(){
-  main.innerHTML = "";
-  // create three panels
-  const s=document.createElement("section"); s.id="ny_stocks_panel";
-  const f=document.createElement("section"); f.id="ny_funds_panel";
-  const p=document.createElement("section"); p.id="ny_portfolio_panel";
-  main.appendChild(s); main.appendChild(f); main.appendChild(p);
-}
-
-function renderStocksPanel(){
-  const panel = document.getElementById("ny_stocks_panel");
-  panel.innerHTML = `<h2 style="margin-top:6px">Buy Stocks</h2><div id="ny_stocks_list"></div>`;
-  const list = panel.querySelector("#ny_stocks_list");
-  Object.keys(stocks).forEach(name=>{
-    const price = stocks[name];
-    const card = document.createElement("div"); card.className="ny-card";
+function renderPortfolio() {
+  const wrapper = el('portfolioList');
+  wrapper.innerHTML = '';
+  const p = getPortfolio();
+  let sum = 0, cost = 0, holdings = 0;
+  // Stocks
+  Object.keys(p.stocks).forEach(name => {
+    const item = p.stocks[name];
+    const current = nowPriceFor(name,'stock');
+    const value = current * item.qty;
+    const pl = value - (item.price * item.qty);
+    sum += value; cost += item.price * item.qty;
+    holdings += item.qty;
+    const card = document.createElement('div');
+    card.className = 'ny-card';
     card.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
-          <div style="font-weight:700">${name}</div>
-          <div style="margin-top:8px;font-size:18px">${formatCurrency(price)}</div>
+          <div class="name">${name} <small style="color:var(--muted-text);font-weight:500"> (stock)</small></div>
+          <div class="meta">Bought @ ${fmt(item.price)} × ${item.qty}</div>
         </div>
-        <div style="text-align:right;min-width:150px">
-          <input class="qty" type="number" min="1" value="1" style="width:72px;padding:8px;border-radius:8px"/>
-          <button class="buy" style="margin-left:8px;padding:9px 12px;border-radius:10px;background:#1abc9c;border:none;color:#fff">Buy</button>
+        <div style="text-align:right">
+          <div class="price">${fmt(value)}</div>
+          <div class="${pl>=0?'positive':'negative'} meta">${pl>=0?'+':''}${fmt(pl)}</div>
         </div>
       </div>
     `;
-    list.appendChild(card);
-    const buy = card.querySelector(".buy");
-    buy.addEventListener("click", ()=>{
-      const qty = Math.max(1, Number(card.querySelector(".qty").value) || 1);
-      buyStock(name, qty, price);
-    });
-    // click shows chart
-    card.addEventListener("click", (e)=> {
-      if(e.target.classList.contains("buy") || e.target.classList.contains("qty")) return;
-      showHoldingChart(name,"stock");
-    });
+    wrapper.appendChild(card);
   });
-}
 
-function renderFundsPanel(){
-  const panel = document.getElementById("ny_funds_panel");
-  panel.innerHTML = `<h2 style="margin-top:6px">Mutual Funds</h2><div id="ny_funds_list"></div>`;
-  const list = panel.querySelector("#ny_funds_list");
-  mutualFunds.forEach(name=>{
-    const card = document.createElement("div"); card.className="ny-card";
+  // Funds
+  Object.keys(p.funds).forEach(name => {
+    const item = p.funds[name];
+    const nav = nowPriceFor(name,'fund');
+    const value = nav * item.units;
+    const pl = value - (item.nav * item.units);
+    sum += value; cost += item.nav * item.units;
+    holdings += item.units;
+    const card = document.createElement('div');
+    card.className = 'ny-card';
     card.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
-          <div style="font-weight:700">${name}</div>
-          <div style="font-size:13px;opacity:.85">Simulated NAV</div>
+          <div class="name">${name} <small style="color:var(--muted-text);font-weight:500"> (fund)</small></div>
+          <div class="meta">Bought NAV ${fmt(item.nav)} × ${item.units}</div>
         </div>
-        <div style="text-align:right;min-width:140px">
-          <input class="qty" type="number" min="1" value="1" style="width:72px;padding:8px;border-radius:8px"/>
-          <button class="add" style="margin-left:8px;padding:9px 12px;border-radius:10px;background:#2f8cff;border:none;color:#fff">Add</button>
+        <div style="text-align:right">
+          <div class="price">${fmt(value)}</div>
+          <div class="${pl>=0?'positive':'negative'} meta">${pl>=0?'+':''}${fmt(pl)}</div>
         </div>
       </div>
     `;
-    list.appendChild(card);
-    card.querySelector(".add").addEventListener("click", ()=>{
-      const units = Math.max(1, Number(card.querySelector(".qty").value) || 1);
-      addFund(name, units, randomBetween(80,250));
-    });
-    card.addEventListener("click",(e)=>{
-      if(e.target.classList.contains("add")||e.target.classList.contains("qty")) return;
-      showHoldingChart(name,"fund");
-    });
+    wrapper.appendChild(card);
   });
+
+  // Update top assets summary
+  const plTotal = sum - cost;
+  assetsTotalEl.textContent = fmt(sum || 0);
+  assetsPLEl.textContent = `${plTotal>=0?'+':''}${fmt(plTotal)}`;
+  assetsPLEl.className = plTotal>=0 ? 'positive' : 'negative';
+  assetsHoldingsEl.textContent = `Holdings: ${holdings}`;
 }
 
-function renderPortfolioPanel(){
-  const panel = document.getElementById("ny_portfolio_panel");
-  panel.innerHTML = `<h2 style="margin-top:6px">Your Portfolio</h2><div id="ny_portfolio_list"></div><div style="height:18px"></div><canvas id="ny_portfolio_chart" style="width:100%;height:260px"></canvas>`;
-  const list = panel.querySelector("#ny_portfolio_list");
-  list.innerHTML = "";
+/* ---------- Actions ---------- */
+function buyStock(name, qty) {
+  qty = Number(qty) || 1;
+  const price = nowPriceFor(name,'stock');
+  const p = getPortfolio();
+  if(!p.stocks[name]) p.stocks[name] = {qty:0, price:0};
+  // We'll store average buy price:
+  const existing = p.stocks[name];
+  const newQty = existing.qty + qty;
+  const newCost = (existing.price * existing.qty) + (price * qty);
+  existing.qty = newQty;
+  existing.price = Math.round((newCost / newQty) * 100) / 100;
+  savePortfolio(p);
+  renderPortfolio();
+}
 
-  let totalValue=0, totalInvested=0, count=0;
+function addFundUnit(name, units) {
+  units = Number(units) || 1;
+  const nav = nowPriceFor(name,'fund');
+  const p = getPortfolio();
+  if(!p.funds[name]) p.funds[name] = {units:0, nav:0};
+  const existing = p.funds[name];
+  // store weighted average NAV
+  const newUnits = existing.units + units;
+  const newCost = (existing.nav * existing.units) + (nav * units);
+  existing.units = newUnits;
+  existing.nav = Math.round((newCost / newUnits) * 100) / 100;
+  savePortfolio(p);
+  renderPortfolio();
+}
 
-  // stocks
-  for(const [n,d] of Object.entries(portfolio.stocks)){
-    count++;
-    const cur = stocks[n] || d.avgPrice;
-    const value = cur * d.qty;
-    totalValue += value;
-    totalInvested += d.avgPrice * d.qty;
+/* ---------- Navigation / Panels ---------- */
+function showPanel(name) {
+  Object.keys(panels).forEach(k => panels[k].style.display = (k === name) ? 'block' : 'none');
+  Object.keys(navButtons).forEach(k => navButtons[k].classList.toggle('active', k === name));
+}
 
-    const item=document.createElement("div"); item.className="ny-card";
-    item.innerHTML = `<div style="display:flex;justify-content:space-between">
-      <div>
-        <div style="font-weight:700">${n} <span style="font-weight:400;font-size:12px;opacity:.8">(${d.qty} qty)</span></div>
-        <div style="margin-top:6px;font-size:14px">${formatCurrency(cur)} <small style="opacity:.75">bought ${formatCurrency(d.avgPrice)}</small></div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-weight:700">${formatCurrency(value)}</div>
-        <div style="color:${value-(d.avgPrice*d.qty)>=0? '#2ecc71':'#e74c3c'}">${value-(d.avgPrice*d.qty)>=0? '▲':'▼'} ${formatCurrency(Math.abs(value-(d.avgPrice*d.qty)))}</div>
-      </div>
-    </div>`;
-    list.appendChild(item);
-    item.addEventListener("click", ()=> showHoldingChart(n,"stock"));
-  }
+function initNav() {
+  navButtons.stocks.addEventListener('click', () => showPanel('stocks'));
+  navButtons.funds.addEventListener('click', () => showPanel('funds'));
+  navButtons.portfolio.addEventListener('click', () => showPanel('portfolio'));
+}
 
-  // funds
-  for(const [n,d] of Object.entries(portfolio.funds)){
-    count++;
-    const cur = d.avgPrice + randomBetween(-10,30);
-    const value = cur * d.units;
-    totalValue += value;
-    totalInvested += d.avgPrice * d.units;
+/* ---------- Chart helpers (simple 6 month chart) ---------- */
+let portfolioChart = null;
+function renderPortfolioChart() {
+  // remove existing if present
+  const existing = document.getElementById('ny_portfolio_chart');
+  if(existing && existing._chart) { existing._chart.destroy(); existing._chart = null; }
+  // create canvas
+  const canvas = document.createElement('canvas');
+  canvas.id = 'ny_portfolio_chart';
+  el('portfolioChartWrap').innerHTML = '';
+  el('portfolioChartWrap').appendChild(canvas);
 
-    const item=document.createElement("div"); item.className="ny-card";
-    item.innerHTML = `<div style="display:flex;justify-content:space-between">
-      <div>
-        <div style="font-weight:700">${n} <span style="font-weight:400;font-size:12px;opacity:.8">(${d.units} units)</span></div>
-        <div style="margin-top:6px;font-size:14px">${formatCurrency(cur)} <small style="opacity:.75">bought ${formatCurrency(d.avgPrice)}</small></div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-weight:700">${formatCurrency(value)}</div>
-        <div style="color:${value-(d.avgPrice*d.units)>=0? '#2ecc71':'#e74c3c'}">${value-(d.avgPrice*d.units)>=0? '▲':'▼'} ${formatCurrency(Math.abs(value-(d.avgPrice*d.units)))}</div>
-      </div>
-    </div>`;
-    list.appendChild(item);
-    item.addEventListener("click", ()=> showHoldingChart(n,"fund"));
-  }
+  // generate sample 6 months data (uniform random delta around current total)
+  const months = ['-5m','-4m','-3m','-2m','-1m','now'];
+  const p = getPortfolio();
+  let base = 0;
+  Object.keys(p.stocks).forEach(n => base += (nowPriceFor(n,'stock') * p.stocks[n].qty));
+  Object.keys(p.funds).forEach(n => base += (nowPriceFor(n,'fund') * p.funds[n].units));
+  if(base === 0) base = 1000; // placeholder
 
-  // update header summary
-  document.getElementById("assetsTotal").textContent = formatCurrency(totalValue||0);
-  document.getElementById("assetsCount").textContent = `Holdings: ${count}`;
-  document.getElementById("dailyChange").textContent = `P/L: ${formatCurrency((totalValue||0)-(totalInvested||0))}`;
+  const data = months.map((m,i) => Math.round((base * (0.9 + 0.02*i + (Math.random()*0.06 - 0.03))) * 100)/100);
 
-  // render combined portfolio chart (simulated 7 points)
-  try{
-    const canvas = document.getElementById("ny_portfolio_chart");
-    if(canvas){
-      if(window.__NY_PORTFOLIO_CHART) window.__NY_PORTFOLIO_CHART.destroy();
-      canvas.style.height = "260px";
-      const ctx = canvas.getContext("2d");
-      const investedSeries = generate6MonthHistory(totalInvested || 1000);
-      const currentSeries = generate6MonthHistory(totalValue || 1200);
-      window.__NY_PORTFOLIO_CHART = new Chart(ctx, {
-        type: "line",
-        data:{ labels:["6m","5m","4m","3m","2m","1m","Now"], datasets:[
-          {label:"Invested", data:investedSeries, borderColor:"#999", borderWidth:1.5, tension:0.25},
-          {label:"Current", data:currentSeries, borderColor:"#2ecc71", borderWidth:2, tension:0.3}
-        ]},
-        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}},scales:{y:{ticks:{callback:v=>formatCurrency(v)}},x:{grid:{display:false}}}}
-      });
+  // Chart.js
+  const cfg = {
+    type: 'line',
+    data: {labels: months, datasets:[{
+      label: 'Portfolio value (6m)',
+      data,
+      fill: true,
+      backgroundColor: 'rgba(46,203,172,0.12)',
+      borderColor: 'rgba(46,203,172,0.9)',
+      tension: 0.35,
+      pointRadius:4
+    }]},
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {beginAtZero:false, ticks:{color:'rgba(255,255,255,0.85)'}},
+        x: {ticks:{color:'rgba(255,255,255,0.7)'}}
+      },
+      plugins: {legend:{display:false}}
     }
-  }catch(e){console.warn("portfolio chart failed",e)}
+  };
+  // create chart with explicit size control to avoid stretching
+  canvas.style.height = '260px';
+  canvas.style.width = '100%';
+  portfolioChart = new Chart(canvas.getContext('2d'), cfg);
+  canvas._chart = portfolioChart;
 }
 
-/* ---------- Actions (buy/add) ---------- */
-function buyStock(name, qty, price){
-  if(!portfolio.stocks[name]) portfolio.stocks[name] = {qty:0, avgPrice:0};
-  const existing = portfolio.stocks[name];
-  const totalQty = existing.qty + qty;
-  const totalCost = existing.avgPrice * existing.qty + price * qty;
-  existing.qty = totalQty;
-  existing.avgPrice = +(totalCost/totalQty).toFixed(2);
-  savePortfolio(portfolio);
-  renderAll();
-}
-function addFund(name, units, nav){
-  if(!portfolio.funds[name]) portfolio.funds[name] = {units:0, avgPrice:0};
-  const existing = portfolio.funds[name];
-  const totalUnits = existing.units + units;
-  const totalCost = existing.avgPrice * existing.units + nav * units;
-  existing.units = totalUnits;
-  existing.avgPrice = +(totalCost/totalUnits).toFixed(2);
-  savePortfolio(portfolio);
-  renderAll();
-}
-
-/* ---------- Chart utilities ---------- */
-function generate6MonthHistory(basePrice){
-  const out=[];
-  let p = basePrice || 100;
-  for(let i=6;i>=0;i--){
-    const vol = Math.max(1, Math.abs(basePrice)*0.03) * (Math.random()*1.2);
-    p = +(basePrice + (Math.random()-0.5)*vol*(i/3)).toFixed(2);
-    out.push(Math.max(1,p));
-  }
-  out[out.length-1] = +(basePrice||out[out.length-1]).toFixed(2);
-  return out;
-}
-
-/* ---------- Modal / detail chart ---------- */
-function ensureModal(){
-  // If modal content already exists and created by page, reuse; else create
-  let cont = document.querySelector("#ny_modal_content");
-  if(!cont){
-    modalWrap.id = "ny_modal";
-    modalWrap.innerHTML = `<div class="ny-modal-content" id="ny_modal_content" style="display:none">
-      <button id="ny_modal_close" style="float:right">Close</button>
-      <canvas id="ny_detail_chart" style="width:100%;height:260px"></canvas>
-    </div>`;
-    document.getElementById("ny_modal_close").addEventListener("click", ()=> {
-      document.getElementById("ny_modal_content").style.display = "none";
-    });
-  }
-}
-function showHoldingChart(name, type){
-  ensureModal();
-  const canvas = document.getElementById("ny_detail_chart");
-  if(!canvas) return;
-  canvas.style.height = "260px";
-  // compute base
-  let base = 100;
-  if(type==="stock"){ base = stocks[name] || (portfolio.stocks[name] && portfolio.stocks[name].avgPrice) || 100; }
-  else base = (portfolio.funds[name] && portfolio.funds[name].avgPrice) || 120;
-  const data = generate6MonthHistory(base);
-  // destroy old
-  try{ if(window.__NY_DETAIL_CHART) window.__NY_DETAIL_CHART.destroy(); }catch(e){}
-  const ctx = canvas.getContext("2d");
-  window.__NY_DETAIL_CHART = new Chart(ctx, {
-    type:"line",
-    data:{ labels:["6m","5m","4m","3m","2m","1m","Now"], datasets:[
-      {label:`${name} (6m)`, data, borderColor:"#2f8cff", borderWidth:2, tension:0.3, pointRadius:3}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,scales:{y:{ticks:{callback:v=>formatCurrency(v)}},x:{grid:{display:false}}}}
+/* ---------- Event delegation (buys/adds) ---------- */
+function initActions() {
+  // Stocks list click (event delegation)
+  el('stocksList').addEventListener('click', (ev) => {
+    const btn = ev.target.closest('button[data-action="buy"]');
+    if(!btn) return;
+    const name = btn.dataset.name;
+    const input = btn.parentElement.querySelector('.qty');
+    const qty = input ? Number(input.value||1) : 1;
+    buyStock(name, qty);
+    // keep view in same panel (do NOT switch)
+    showPanel('stocks');
+    flashConfirm(`${qty} × ${name} bought`);
   });
-  document.getElementById("ny_modal_content").style.display = "block";
+
+  // Funds list click
+  el('fundsList').addEventListener('click', (ev) => {
+    const btn = ev.target.closest('button[data-action="addFund"]');
+    if(!btn) return;
+    const name = btn.dataset.name;
+    const input = btn.parentElement.querySelector('.qty');
+    const units = input ? Number(input.value||1) : 1;
+    addFundUnit(name, units);
+    // keep view in same panel
+    showPanel('funds');
+    flashConfirm(`${units} units of ${name} added`);
+  });
 }
 
-/* ---------- Show/hide panels ---------- */
-function showPanel(name){
-  const s = document.getElementById("ny_stocks_panel");
-  const f = document.getElementById("ny_funds_panel");
-  const p = document.getElementById("ny_portfolio_panel");
-  if(!s || !f || !p) return;
-  s.style.display = f.style.display = p.style.display = "none";
-  if(name==="stocks") s.style.display="block";
-  if(name==="funds") f.style.display="block";
-  if(name==="portfolio") p.style.display="block";
-  document.querySelectorAll(".ny-nav-btn").forEach(b=>b.classList.remove("active"));
-  const btn = document.getElementById("nav"+capitalize(name));
-  if(btn) btn.classList.add("active");
-}
-function capitalize(s){ return s.charAt(0).toUpperCase()+s.slice(1) }
-
-/* ---------- Master render ---------- */
-function renderAll(){
-  renderHeader();
-  clearMain();
-  renderStocksPanel();
-  renderFundsPanel();
-  renderPortfolioPanel();
-  renderBottomNav();
-  // default show stocks
-  showPanel("stocks");
+/* ---------- Small UI helpers ---------- */
+function flashConfirm(msg) {
+  const elFlash = document.createElement('div');
+  elFlash.textContent = msg;
+  Object.assign(elFlash.style, {position:'fixed',left:'50%',top:'20%',transform:'translateX(-50%)',padding:'10px 16px',background:'#0b2a20',color:'#bff1df',borderRadius:'8px',zIndex:9999});
+  document.body.appendChild(elFlash);
+  setTimeout(()=>elFlash.remove(),1600);
 }
 
-/* ---------- Init ---------- */
-renderAll();
+/* ---------- App init ---------- */
+function initApp() {
+  initNav();
+  renderStocks();
+  renderFunds();
+  renderPortfolio();
+  renderPortfolioChart();
+  initActions();
+  // start with stocks shown
+  showPanel('stocks');
 
-/* expose for debug */
-window.NY = { portfolio, buyStock, addFund, renderAll, savePortfolio };
+  // small auto-refresh of prices (simulate live ticks)
+  setInterval(() => {
+    // jitter base data slightly so prices "update" visually
+    Object.keys(stocks).forEach(k => { stocks[k] = Math.round((stocks[k] * (1 + (Math.random()-0.5)/200)) * 100)/100; });
+    renderStocks();
+    renderFunds();
+    renderPortfolio();
+    renderPortfolioChart();
+  }, 15000); // every 15s
+}
+
+/* ---------- Startup ---------- */
+document.addEventListener('DOMContentLoaded', initApp);
