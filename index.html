@@ -1,86 +1,76 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Nivesh Yatra — Brokerage Demo</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nivesh Yatra</title>
 
-  <!-- Google font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;800&display=swap" rel="stylesheet">
-
-  <!-- local CSS -->
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <header class="site-header">
-    <a href="#" class="brand-link" id="brandBtn" title="Home (Stocks)">
-      <img src="logo.png" alt="Nivesh Yatra" class="logo">
-      <div class="brand-text">
-        <div class="company-name">Nivesh Yatra</div>
-        <div class="slogan">Turning dreams into Assets.</div>
-      </div>
-    </a>
 
-    <div class="header-icons">
-      <button id="toggleTheme" class="icon-btn" title="Toggle theme">🌗</button>
-      <button id="notifBtn" class="icon-btn" title="Notifications">🔔</button>
+  <!-- HEADER -->
+  <header id="ny_header">
+    <img id="ny_logo_img" src="logo.png" alt="Logo">
+    <div>
+      <div class="brand-title">Nivesh Yatra</div>
+      <div class="brand-sub">Turning dreams into Assets.</div>
     </div>
   </header>
 
-  <main class="app">
-    <!-- Assets card -->
-    <section class="assets-card" id="assetsCard">
-      <div class="assets-left">
-        <div class="label">MY ASSETS</div>
-        <div class="total" id="totalAssets">₹0</div>
-        <div class="day-change" id="dayChange">1 Day Change: ₹0 (0.00%)</div>
-        <div class="holdings-info" id="holdCount">Holdings: 0</div>
-      </div>
-      <div class="assets-right">
-        <button id="eyeBtn" class="icon-btn">👁️</button>
+  <!-- ASSETS SUMMARY -->
+  <section id="ny_assets_box">
+    <div id="assetsTotal">₹0</div>
+    <div id="assetsPL" class="positive">+₹0</div>
+    <div id="assetsCount">Holdings: 0</div>
+  </section>
+
+  <!-- MAIN CONTENT -->
+  <main id="ny_main">
+
+    <!-- STOCKS PANEL -->
+    <section id="ny_stocks_panel">
+      <h2>Buy Stocks</h2>
+      <div id="stocksList"></div>
+    </section>
+
+    <!-- FUNDS PANEL -->
+    <section id="ny_funds_panel" style="display:none;">
+      <h2>Buy Mutual Funds</h2>
+      <div id="fundsList"></div>
+    </section>
+
+    <!-- PORTFOLIO PANEL -->
+    <section id="ny_portfolio_panel" style="display:none;">
+      <h2>Your Portfolio</h2>
+      <div id="portfolioList"></div>
+
+      <h2 style="margin-top:24px;">6-Month Performance</h2>
+      <div id="portfolioChartWrap" style="width:100%;height:260px;">
+        <!-- Chart is injected here -->
       </div>
     </section>
 
-    <!-- content panels -->
-    <section class="container">
-      <div id="stocksPanel" class="panel">
-        <h2>Buy Stocks</h2>
-        <div id="stocksList" class="list"></div>
-      </div>
-
-      <div id="fundsPanel" class="panel hidden">
-        <h2>Mutual Funds</h2>
-        <div id="fundsList" class="list"></div>
-      </div>
-
-      <div id="portfolioPanel" class="panel hidden">
-        <h2>Your Portfolio</h2>
-        <div id="portfolioList" class="list empty">No holdings yet.</div>
-      </div>
-    </section>
   </main>
 
-  <!-- bottom nav -->
-  <nav class="bottom-nav">
-    <button class="nav-btn active" data-tab="stocks">📈<span>Stocks</span></button>
-    <button class="nav-btn" data-tab="funds">📊<span>Funds</span></button>
-    <button class="nav-btn" data-tab="portfolio">🧾<span>Portfolio</span></button>
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="ny-bottom-nav">
+    <button class="ny-nav-btn active" id="nav_stocks">
+      📈 Stocks
+    </button>
+    <button class="ny-nav-btn" id="nav_funds">
+      📊 Funds
+    </button>
+    <button class="ny-nav-btn" id="nav_portfolio">
+      📄 Portfolio
+    </button>
   </nav>
 
-  <!-- Modal for chart / details -->
-  <div id="modal" class="modal hidden" role="dialog" aria-hidden="true">
-    <div class="modal-content">
-      <button class="close-modal" id="closeModal">✕</button>
-      <h3 id="modalTitle">Holding</h3>
-      <canvas id="holdingChart" height="220"></canvas>
-      <div class="modal-stats" id="modalStats"></div>
-    </div>
-  </div>
-
-  <!-- Local JS -->
+  <!-- JS -->
   <script src="script.js"></script>
 </body>
 </html>
