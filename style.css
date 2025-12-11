@@ -23,7 +23,7 @@ a{color:inherit}
 }
 #ny_logo_img{width:56px;height:56px;border-radius:12px;object-fit:cover;box-shadow:0 6px 18px rgba(0,0,0,0.4);margin-right:8px}
 .brand-title{font-weight:800;font-size:18px}
-.brand-sub{font-size:12px;opacity:0.9;margin-top:2px}
+.brand-sub{font-size:12px;opacity:0.95;margin-top:2px}
 
 /* assets summary */
 #ny_assets_box{display:flex;flex-direction:column;gap:6px;padding:18px;margin:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 8px 20px rgba(0,0,0,0.6)}
@@ -32,40 +32,59 @@ a{color:inherit}
 #assetsCount{color:var(--muted);font-size:13px}
 
 /* main container */
-#ny_main{padding:16px 14px 130px;max-width:980px;margin:0 auto}
+#ny_main{padding:16px 14px 140px;max-width:980px;margin:0 auto}
 
 /* headings */
 #ny_main h2{font-size:22px;margin:8px 0 12px}
 
-/* list style for the requested layout */
-.list-item{
-  display:flex;align-items:center;justify-content:space-between;background:var(--card);padding:14px;border-radius:12px;margin-bottom:12px;box-shadow:0 6px 18px rgba(0,0,0,0.6)
-}
-.item-left{display:flex;gap:12px;align-items:center}
-.item-logo{width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--white);flex-shrink:0;box-shadow:inset 0 -6px 12px rgba(0,0,0,0.2)}
-.item-meta{display:flex;flex-direction:column}
-.item-title{font-weight:700;font-size:16px}
-.item-sub{font-size:12px;color:var(--muted);margin-top:4px}
+/* list container */
+.list{display:flex;flex-direction:column;gap:12px}
 
-/* right block with price & change */
-.item-right{text-align:right;min-width:100px}
+/* card style for each item (separated) */
+.list-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  background:var(--card);
+  padding:12px 14px;
+  border-radius:14px;
+  margin-bottom:0;
+  box-shadow:0 8px 20px rgba(0,0,0,0.55);
+  min-height:72px;
+}
+
+/* left area: logo + metadata */
+.item-left{display:flex;gap:12px;align-items:center;flex:1;min-width:0}
+.item-logo{width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--white);flex-shrink:0;box-shadow:inset 0 -6px 10px rgba(0,0,0,0.25)}
+.item-meta{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.item-title{font-weight:700;font-size:16px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.item-sub{font-size:12px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* right column (price + change) + control to left of it */
+.right-block{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.item-right{text-align:right;min-width:110px}
 .item-price{font-weight:800;font-size:18px}
-.item-change{font-weight:700;font-size:13px;margin-top:6px;display:inline-block;padding:6px 8px;border-radius:18px;color:var(--white)}
+.item-change{font-weight:700;font-size:13px;margin-top:6px;display:inline-block;padding:6px 10px;border-radius:18px;color:var(--white)}
 
 /* positive / negative */
 .change-up{background:rgba(46,204,113,0.12);color:var(--success)}
 .change-down{background:rgba(231,76,60,0.12);color:var(--danger)}
 
 /* controls (for buy) */
-.controls{display:flex;align-items:center;gap:8px;margin-left:12px}
-.qty{width:70px;padding:8px;border-radius:10px;border:none;background:rgba(255,255,255,0.03);color:var(--white);text-align:center}
-.btn-buy{background:var(--accent);border:none;color:white;padding:8px 12px;border-radius:12px;cursor:pointer;font-weight:700}
+.controls{display:flex;align-items:center;gap:8px}
+.qty{width:72px;padding:8px;border-radius:10px;border:none;background:rgba(255,255,255,0.03);color:var(--white);text-align:center}
+.btn-buy{background:var(--accent);border:none;color:white;padding:8px 12px;border-radius:12px;cursor:pointer;font-weight:700;min-width:64px}
 
 /* portfolio rows */
 .port-row{display:flex;justify-content:space-between;gap:12px;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0));margin-bottom:10px;align-items:center}
-.port-left{display:flex;flex-direction:column;gap:4px}
+.port-left{display:flex;gap:12px;align-items:center}
+.port-left .port-title{font-weight:700}
 .port-right{text-align:right;font-weight:700}
 .port-sub{font-size:13px;color:var(--muted)}
+
+/* arrow small */
+.port-arrow{display:inline-block;margin-left:6px;vertical-align:middle;font-weight:800}
 
 /* chart */
 #portfolioChartWrap{background:transparent;border-radius:10px;padding:10px}
@@ -81,7 +100,7 @@ a{color:inherit}
 /* small screens */
 @media (max-width:520px){
   #ny_logo_img{width:48px;height:48px}
-  .item-logo{width:44px;height:44px}
+  .item-logo{width:48px;height:48px}
   .qty{width:56px}
   #assetsTotal{font-size:20px}
 }
