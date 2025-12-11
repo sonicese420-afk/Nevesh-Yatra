@@ -45,7 +45,7 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;color:var(--tex
 
 .title{font-size:28px;margin:12px 4px 8px}
 
-.list{padding-bottom:120px}
+.list{padding-bottom:140px}
 
 /* stock card */
 .stock-card{
@@ -85,7 +85,7 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;color:var(--tex
 .detail-pl{font-weight:700}
 
 /* body area with chart and controls */
-.detail-body{flex:1;overflow:auto;padding:12px 18px 100px}
+.detail-body{flex:1;overflow:auto;padding:12px 18px 140px}
 .chart-wrap{height:420px; padding:8px; margin-bottom:8px}
 .chart-wrap canvas{width:100% !important; height:100% !important; display:block}
 
@@ -94,8 +94,13 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;color:var(--tex
 .time{background:transparent;border:1px solid rgba(255,255,255,0.05);padding:8px 12px;border-radius:12px;color:var(--muted);cursor:pointer}
 .time.active{background:rgba(255,255,255,0.03);color:var(--text)}
 
-/* optional stats */
-.detail-stats{padding:10px}
+/* top stats */
+.detail-stats{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px;margin-bottom:12px}
+.detail-stats .stat{flex:1;text-align:center}
+
+/* order area */
+.order-area{display:flex;align-items:center;gap:12px;padding:12px;margin-top:8px}
+#qtyInput{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:var(--text)}
 
 /* fixed bottom action bar for buy/sell/sip */
 .action-bar{
@@ -107,6 +112,10 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;color:var(--tex
 .btn-primary{background:var(--accent);color:#fff}
 .btn-danger{background:var(--danger);color:#fff}
 .btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
+
+/* toast */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;background:rgba(0,0,0,0.8);padding:10px 18px;border-radius:10px;color:#fff;z-index:90}
+.toast.hidden{display:none}
 
 /* small screens tweaks */
 @media (max-width:520px){
