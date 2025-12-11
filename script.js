@@ -1,3 +1,7 @@
+/* script.js - updated
+   Shows ▲/▼ on cards only when the item is owned in portfolio
+*/
+
 /* small helpers */
 function random(a,b){ return +(Math.random()*(b-a)+a).toFixed(2) }
 
@@ -58,7 +62,7 @@ function renderStocks(){
   Object.keys(stocks).forEach(name=>{
     const sym = stocks[name];
     const price = currentPrices[name] = currentPrices[name] || random(200,2000);
-    const pct = random(-2.5,2.5);
+    const pct = random(-2.5,2.5); // simulated percent (we will only display if owned)
 
     const card = document.createElement('div'); card.className='list-item';
 
@@ -85,9 +89,14 @@ function renderStocks(){
 
     const priceArea = document.createElement('div'); priceArea.style.textAlign='right';
     const priceEl = document.createElement('div'); priceEl.className='item-price'; priceEl.textContent = `₹${price}`;
-    const pctEl = document.createElement('div'); pctEl.className='pct-chip ' + (pct>=0? 'pct-up':'pct-down');
-    pctEl.textContent = `${pct>=0? '▲':'▼'} ${Math.abs(pct).toFixed(2)}%`;
-    priceArea.appendChild(priceEl); priceArea.appendChild(pctEl);
+    priceArea.appendChild(priceEl);
+
+    /* ONLY show pct chip if user OWNS this stock */
+    if(portfolio.stocks && portfolio.stocks[name]){
+      const pctEl = document.createElement('div'); pctEl.className='pct-chip ' + (pct>=0? 'pct-up':'pct-down');
+      pctEl.textContent = `${pct>=0? '▲':'▼'} ${Math.abs(pct).toFixed(2)}%`;
+      priceArea.appendChild(pctEl);
+    }
 
     rightBlock.appendChild(controls);
     rightBlock.appendChild(priceArea);
@@ -98,7 +107,7 @@ function renderStocks(){
   });
 }
 
-/* Render funds — similar layout with 'Fund' badge */
+/* Render funds — similar layout with 'Fund' badge, pct only if owned */
 function renderFunds(){
   fundsList.innerHTML = '';
   mutualFunds.forEach(name=>{
@@ -126,9 +135,14 @@ function renderFunds(){
 
     const priceArea = document.createElement('div'); priceArea.style.textAlign='right';
     const priceEl = document.createElement('div'); priceEl.className='item-price'; priceEl.textContent = `₹${nav}`;
-    const pctEl = document.createElement('div'); pctEl.className='pct-chip ' + (pct>=0? 'pct-up':'pct-down');
-    pctEl.textContent = `${pct>=0? '▲':'▼'} ${Math.abs(pct).toFixed(2)}%`;
-    priceArea.appendChild(priceEl); priceArea.appendChild(pctEl);
+    priceArea.appendChild(priceEl);
+
+    /* ONLY show pct chip if user OWNS this fund */
+    if(portfolio.funds && portfolio.funds[name]){
+      const pctEl = document.createElement('div'); pctEl.className='pct-chip ' + (pct>=0? 'pct-up':'pct-down');
+      pctEl.textContent = `${pct>=0? '▲':'▼'} ${Math.abs(pct).toFixed(2)}%`;
+      priceArea.appendChild(pctEl);
+    }
 
     rightBlock.appendChild(controls); rightBlock.appendChild(priceArea);
     card.appendChild(left); card.appendChild(rightBlock);
@@ -185,6 +199,7 @@ function renderPortfolio(){
     const diff = +(value - cost);
     const arrow = document.createElement('span'); arrow.className='port-arrow'; arrow.textContent = diff >=0 ? '▲' : '▼';
     arrow.style.color = diff >=0 ? 'var(--success)' : 'var(--danger)';
+    arrow.style.marginLeft = '8px';
     const pl = document.createElement('div'); pl.textContent = `${diff>=0?'+':'-'}₹${Math.abs(diff).toFixed(2)}`; pl.style.color = diff>=0 ? 'var(--success)':'var(--danger)';
     right.appendChild(arrow); right.appendChild(pl);
 
