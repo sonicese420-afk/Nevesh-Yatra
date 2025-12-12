@@ -1,33 +1,47 @@
 // scripts/header.js
-// Small header behaviour: show guest chip, hide the old auth buttons + duplicate header parts
+// Defensive header adjustments: ensure only guest chip is visible and remove duplicates.
 
-document.addEventListener('DOMContentLoaded', function () {
+function forceHideElements() {
   try {
-    // hide legacy auth buttons (if present)
+    // hide auth buttons group (if present)
     const authBtns = document.getElementById('nyAuthBtns');
     if (authBtns) authBtns.style.display = 'none';
 
-    // hide logged-in profile area (we're defaulting to guest)
-    const profile = document.getElementById('nyProfile');
-    if (profile) profile.classList.add('hidden');
+    // hide the bell control if present
+    const bell = document.getElementById('nyBellBtn') || document.querySelector('.ny-icon-btn#nyBellBtn');
+    if (bell) bell.style.display = 'none';
 
-    // show guest chip (if present)
-    const guestChip = document.getElementById('nyGuestChip');
-    if (guestChip) guestChip.style.display = 'inline-flex';
+    // hide any logged-in profile wrapper
+    const profile = document.getElementById('nyProfile') || document.querySelector('.ny-profile');
+    if (profile) profile.style.display = 'none';
 
-    // ensure the duplicate app header is hidden (defensive)
+    // hide avatar/button variations
+    const avatarBtn = document.getElementById('nyAvatarBtn') || document.querySelector('.ny-avatar') || document.querySelector('.half-human');
+    if (avatarBtn) avatarBtn.style.display = 'none';
+
+    // show guest chip if exists
+    const guest = document.getElementById('nyGuestChip') || document.querySelector('.ny-guest-chip');
+    if (guest) {
+      guest.style.display = 'inline-flex';
+      guest.setAttribute('aria-pressed', 'false');
+      guest.setAttribute('tabindex', '0');
+    }
+
+    // defensive: hide alternate header if present
     const altHeader = document.querySelector('.app-header');
-    if (altHeader) altHeader.classList.add('hidden');
+    if (altHeader) altHeader.style.display = 'none';
 
-    // small safety: if there is a stray text-only logo-badge element, hide it too
-    const logoBadge = document.querySelector('.logo-badge');
-    if (logoBadge) logoBadge.classList.add('hidden');
-
-    // make header accessible: focusable guest chip
-    if (guestChip) guestChip.setAttribute('tabindex', '0');
-
-  } catch (err) {
-    // do nothing — this file is non-blocking
-    console.warn('header.js error', err);
+  } catch (e) {
+    console.warn('header force-hide error', e);
   }
+}
+
+// run on DOM ready
+document.addEventListener('DOMContentLoaded', function () {
+  forceHideElements();
+
+  // If something else rerenders the header later (single-page), re-run once shortly after
+  setTimeout(forceHideElements, 400);
+  // final safety run
+  setTimeout(forceHideElements, 1200);
 });
