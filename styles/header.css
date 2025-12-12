@@ -1,173 +1,69 @@
 /* styles/header.css
-   Header styling for Nivesh Yatra - place in styles/header.css
+   Strong defensive header overrides to hide duplicate icons and stabilize layout.
+   Overly-specific selectors + !important to beat other styles.
 */
 
-:root{
-  --ny-green-1: #2fa37a;
-  --ny-green-2: #1f8f6b;
-  --ny-dark: #031312;
-  --ny-muted: rgba(255,255,255,0.85);
-}
-
-/* small helper */
-.hidden { display: none !important; }
-
-/* Header container */
-.ny-header{
-  width:100%;
-  background: linear-gradient(90deg, var(--ny-green-1), var(--ny-green-2));
-  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
-  color: #fff;
-  padding: 14px 16px;
+/* Container alignment */
+#ny-header, .ny-header, header.ny-header {
   box-sizing: border-box;
 }
 
-/* Inner content: space between left and right */
-.ny-header-inner{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:18px;
-  max-width:1200px;
-  margin:0 auto;
+/* Hide any button that mentions notifications/bell in title/aria-label/text */
+button[title*="Bell"],
+button[title*="bell"],
+button[title*="Notif"],
+button[aria-label*="Notif"],
+button[aria-label*="Bell"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
-/* left group: logo + titles */
-.ny-left{
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
-
-/* logo image */
-.ny-logo{
-  width:64px;
-  height:64px;
-  object-fit:cover;
-  border-radius:12px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-  background: rgba(255,255,255,0.03);
-}
-
-/* title column */
-.ny-title-wrap{
-  display:flex;
-  flex-direction:column;
-  line-height:1;
-}
-
-/* primary title (company name) */
-.ny-title{
-  font-size:20px;
-  font-weight:800;
-  letter-spacing: -0.5px;
-  color:#ffffff;
-}
-
-/* subtitle */
-.ny-subtitle{
-  font-size:12px;
-  color: rgba(255,255,255,0.92);
-  margin-top:4px;
-}
-
-/* right area (icons + guest chip) */
-.ny-right{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-
-/* icon row (eye / bell) */
-.ny-icon-row{
-  display:flex;
-  gap:10px;
-  align-items:center;
-}
-
-/* icon button style */
-.ny-icon-btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:42px;
-  height:42px;
-  border-radius:10px;
-  background: rgba(255,255,255,0.06);
-  border: none;
-  cursor:pointer;
-  transition: transform .12s ease, background .12s ease;
-}
-.ny-icon-btn:active{ transform: translateY(1px); }
-.ny-icon-btn svg { fill: #eaf7ef; opacity:0.95; }
-
-/* guest chip (profile placeholder) */
-.ny-profile-area { display:flex; align-items:center; }
-.ny-guest-chip{
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  background: rgba(255,255,255,0.06);
-  padding:8px 12px;
-  border-radius:12px;
-  color:#fff;
-  border:none;
-  cursor:pointer;
-  font-weight:600;
-}
-.ny-guest-initial{
-  width:34px;
-  height:34px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:8px;
-  background: rgba(255,255,255,0.12);
-  font-weight:700;
-}
-
-/* Small view adjustments */
-@media (max-width:520px){
-  .ny-header-inner { gap:12px; }
-  .ny-title { font-size:18px; }
-  .ny-logo { width:52px; height:52px; }
-  .ny-icon-btn { width:38px; height:38px; }
-}
-
-/* HIDE the alternate/duplicate header block that lives lower in the page
-   (your HTML includes another header block called .app-header — hide it) */
-.app-header, .logo-badge { display:none !important; }
-
-/* Fix for any stray "NY" text that might have been left */
-.logo-badge { display:none; }
-
-/* Also make sure main page title below header isn't overlapped.
-   Give some top margin to page content (so header doesn't cover it) */
-body { padding-top: 0; margin:0; background: #071211; color: #e7efe7; font-family: Inter, system-ui, Arial, sans-serif; }
-main, .page-content { padding: 20px; max-width:1200px; margin: 0 auto; }
-/* ---------- Header quick overrides (hide duplicates) ---------- */
-
-/* Force hide the bell button if present */
-#nyBellBtn, button#nyBellBtn, .ny-icon-btn#nyBellBtn {
+/* Hide common ID/class names that may represent duplicate icons */
+#nyBellBtn, .ny-bell, .bell-btn, .bell, .ny-icon-btn.bell {
   display: none !important;
 }
 
-/* Force hide any "full profile" avatar area (logged-in) */
-#nyProfile, .ny-profile, .ny-profile.hidden {
+/* Hide any element whose text is "G" avatar duplicate or a half-human */
+.ny-guest-initial.duplicate,
+.half-human, .ny-avatar-small, .avatar-mini {
   display: none !important;
 }
 
-/* Ensure guest chip shows (if exist) */
-#nyGuestChip, .ny-guest-chip {
+/* Hide any element that contains the word "profile" (defensive) */
+[id*="profile"][class*="profile"] {
+  display: none !important;
+}
+
+/* Show the guest chip (if present) and keep it aligned */
+#nyGuestChip, .ny-guest-chip, .ny-guest {
   display: inline-flex !important;
-  align-items: center;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 10px !important;
+  border-radius: 10px !important;
+  background: rgba(255,255,255,0.03) !important;
 }
 
-/* If there is a stray small avatar button (the half-human icon),
-   hide that too (cover several possible class/id names) */
-#nyAvatarBtn, .ny-avatar, .half-human {
+/* Force icon row layout so header text stays centered/left and not squished */
+.ny-header-inner, .ny-left, .ny-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+/* Prevent oversized header blocks from overlapping content */
+.ny-header { padding: 14px 18px !important; }
+
+/* Defensive: if a duplicate header (app-header) exists lower in DOM, hide it */
+.app-header, header.app-header {
   display: none !important;
 }
 
-/* defensive: don't let the icon row push things off */
-.ny-right { align-items:center; gap:10px; }
+/* Extra: keep the main title readable (if titled element uses ny-title) */
+.ny-title, .app-title, .title-wrap h1 {
+  font-size: 1.4rem !important;
+  line-height: 1.15 !important;
+  white-space: normal !important;
+  margin: 0 !important;
+}
