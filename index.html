@@ -1,106 +1,111 @@
-<!-- index.html -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Nivesh Yatra — Demo</title>
+
+  <!-- Main stylesheet (cache-bust during testing if needed e.g. style.css?v=2) -->
   <link rel="stylesheet" href="style.css" />
+
+  <!-- small meta tag so user can debug easily -->
+  <meta name="description" content="Nivesh Yatra demo: stocks, funds & portfolio (test build)" />
 </head>
 <body>
-  <header class="app-header">
-    <div class="logo-square" id="appLogo" aria-hidden="true">NY</div>
-    <div class="header-text">
-      <div class="title">Nivesh Yatra</div>
-      <div class="subtitle">Your Investment Journey</div>
-    </div>
-    <div class="header-actions">
-      <button id="toggleEye" class="icon-btn" aria-label="toggle-visibility">👁️</button>
-      <button id="notifBtn" class="icon-btn" aria-label="notifications">🔔</button>
+  <header class="topbar">
+    <div class="logoWrap">
+      <img id="siteLogo" alt="NY logo" src="logo.png" onerror="this.style.display='none'"/>
+      <div class="siteTitle">
+        <div class="brandShort">NY</div>
+        <div class="brandMain">Nivesh Yatra</div>
+        <div class="brandSub">Turning dreams into Assets.</div>
+      </div>
+      <div class="topicons">
+        <button class="iconBtn" id="toggleView" title="Toggle view">👁️</button>
+        <button class="iconBtn" id="alerts" title="Alerts">🔔</button>
+      </div>
     </div>
   </header>
 
-  <main id="main">
-    <section class="assets-card" id="assetsCard" aria-live="polite">
-      <div class="assets-left">
-        <div class="assets-label">MY ASSETS</div>
-        <div class="assets-value" id="assetsValue">₹0</div>
-        <div class="assets-holdings" id="assetsHoldings">Holdings: 0</div>
+  <main id="appRoot">
+    <section class="assetsCard">
+      <div class="assetsLabel">MY ASSETS</div>
+      <div class="assetsRow">
+        <div class="assetsValue" id="assetsValue">₹0</div>
+        <div class="assetsChange" id="assetsChange">+₹0 (0.00%)</div>
       </div>
-      <div class="assets-right">
-        <div class="day-change" id="dayChange">+₹0 (0.00%)</div>
-      </div>
+      <div class="assetsHoldings" id="assetsHoldings">Holdings: 0</div>
     </section>
 
-    <nav class="tabs" role="tablist" aria-label="Main tabs">
+    <nav class="tabs" role="tablist">
       <button class="tab active" data-tab="stocks">Stocks</button>
       <button class="tab" data-tab="funds">Funds</button>
       <button class="tab" data-tab="portfolio">Portfolio</button>
     </nav>
 
-    <section class="content">
-      <h1 class="section-title" id="sectionTitle">Buy Stocks</h1>
+    <section id="listArea" class="listArea" aria-live="polite">
+      <h1 class="pageHeading">Buy Stocks</h1>
 
-      <div id="listContainer" class="cards-list" aria-live="polite">
-        <!-- Cards will be injected by app.js -->
-      </div>
+      <!-- Items will be injected here by JS -->
+      <div id="itemsContainer" class="itemsContainer" role="list"></div>
     </section>
   </main>
 
-  <!-- Bottom mobile nav -->
-  <div class="bottom-nav" role="navigation" aria-label="Bottom navigation">
-    <button class="bnav active" data-tab="stocks">Stocks</button>
-    <button class="bnav" data-tab="funds">Funds</button>
-    <button class="bnav" data-tab="portfolio">Portfolio</button>
-  </div>
-
-  <!-- Fullscreen modal / overlay for selected instrument -->
-  <div id="overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="overlay-content" id="overlayContent">
-      <header class="overlay-header">
-        <div class="overlay-left">
-          <div class="ov-avatar" id="ovAvatar">RE</div>
-          <div class="ov-meta">
-            <div id="ovName" class="ov-name">Reliance Industries Ltd</div>
-            <div id="ovTicker" class="ov-ticker">STOCK | RELIANCE</div>
+  <!-- Modal for item details (hidden by default) -->
+  <div id="detailModal" class="modal hidden" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modalContent">
+      <header class="modalHeader">
+        <div class="modalTitle">
+          <div id="modalBadge" class="modalBadge">RE</div>
+          <div>
+            <div id="modalName" class="modalName">Reliance Industries Ltd</div>
+            <div id="modalSub" class="modalSub">Stock | RELIANCE</div>
           </div>
         </div>
-        <div class="overlay-right">
-          <div id="ovPrice" class="ov-price">₹0</div>
-          <button id="closeOverlay" class="close-btn" aria-label="close">✕</button>
+        <div class="modalCloseArea">
+          <div id="modalPrice" class="modalPrice">₹0.00</div>
+          <button id="closeModal" class="closeBtn">✕</button>
         </div>
       </header>
 
-      <div id="chartArea" class="chart-area">
-        <canvas id="instrumentChart"></canvas>
-        <div class="range-buttons" role="tablist" aria-label="Time ranges">
-          <button class="range-btn active" data-range="1D">1D</button>
-          <button class="range-btn" data-range="1W">1W</button>
-          <button class="range-btn" data-range="1M">1M</button>
-          <button class="range-btn" data-range="6M">6M</button>
-          <button class="range-btn" data-range="1Y">1Y</button>
+      <div class="modalChartWrap">
+        <canvas id="detailChart"></canvas>
+        <div class="periodButtons" id="periodButtons">
+          <button data-period="1D" class="periodBtn active">1D</button>
+          <button data-period="1W" class="periodBtn">1W</button>
+          <button data-period="1M" class="periodBtn">1M</button>
+          <button data-period="6M" class="periodBtn">6M</button>
+          <button data-period="1Y" class="periodBtn">1Y</button>
         </div>
       </div>
 
-      <div class="trade-area">
-        <label for="qtyInput">Qty</label>
-        <input type="number" id="qtyInput" value="1" min="1" />
-        <div class="trade-actions">
-          <button class="sell-btn" id="sellBtn">SELL</button>
-          <button class="buy-btn" id="buyBtn">BUY</button>
-          <button class="sip-btn" id="sipBtn">SIP</button>
+      <div class="tradeArea">
+        <label>Qty <input id="tradeQty" type="number" min="1" value="1" /></label>
+        <div class="tradeBtns">
+          <button id="sellBtn" class="sell">SELL</button>
+          <button id="buyBtn" class="buy">BUY</button>
+          <button id="sipBtn" class="sip">SIP</button>
         </div>
       </div>
 
-      <div class="overlay-tabs">
-        <button class="ov-tab active">Details</button>
-        <button class="ov-tab">Orders</button>
-        <button class="ov-tab">News</button>
+      <div class="modalTabs">
+        <button class="mdTab active">Details</button>
+        <button class="mdTab">Orders</button>
+        <button class="mdTab">News</button>
       </div>
-
     </div>
   </div>
 
+  <!-- small footer nav (floating) -->
+  <footer class="bottomNav">
+    <div class="navWrap">
+      <button class="navItem active" data-section="stocks">📈 Stocks</button>
+      <button class="navItem" data-section="funds">📊 Funds</button>
+      <button class="navItem" data-section="portfolio">📁 Portfolio</button>
+    </div>
+  </footer>
+
+  <!-- App JS (cache-bust when testing) -->
   <script src="app.js"></script>
 </body>
-  </html>
+</html>
