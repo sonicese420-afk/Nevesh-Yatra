@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nivesh-Yatra</title>
 
-    <!-- Link CSS -->
     <link rel="stylesheet" href="styles/styles.css" />
-
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
@@ -27,8 +24,8 @@
         <button id="profileBtn" class="profile-btn">👤</button>
     </header>
 
-    <!-- SLIDE PROFILE PANEL -->
-    <section id="profilePanel" class="profile-panel">
+    <!-- PROFILE PANEL -->
+    <section id="profilePanel" class="profile-panel hidden">
         <h2>Your Profile</h2>
         <p><strong>Demo Money:</strong> ₹<span id="walletBalance">10000</span></p>
 
@@ -43,34 +40,30 @@
         <button id="closeProfile" class="close-profile">Close</button>
     </section>
 
-    <!-- MAIN CONTENT SCREEN -->
+    <!-- MAIN AREA -->
     <main id="screenContainer">
 
         <!-- STOCKS SCREEN -->
         <section id="stocksScreen" class="screen active-screen">
             <h2 class="screen-title">Stocks</h2>
-
-            <div class="stock-list" id="stocksList"></div>
+            <div id="stocksList" class="stock-list"></div>
         </section>
 
         <!-- FUNDS SCREEN -->
         <section id="fundsScreen" class="screen">
             <h2 class="screen-title">Mutual Funds</h2>
-
-            <div class="fund-list" id="fundsList"></div>
+            <div id="fundsList" class="fund-list"></div>
         </section>
 
         <!-- PORTFOLIO SCREEN -->
         <section id="portfolioScreen" class="screen">
             <h2 class="screen-title">Portfolio</h2>
-
             <div id="portfolioSummary"></div>
-
             <h3>Your Holdings</h3>
             <div id="holdingsList"></div>
         </section>
 
-        <!-- STOCK/FUND DETAIL SCREEN -->
+        <!-- DETAIL SCREEN -->
         <section id="detailScreen" class="screen hidden">
             <button id="backToMain" class="back-btn">← Back</button>
 
@@ -97,20 +90,18 @@
                 <button id="confirmTrade">Confirm</button>
             </div>
         </section>
-
     </main>
 
-    <!-- TOAST POPUP -->
+    <!-- TOAST -->
     <div id="toast" class="toast hidden">Message</div>
 
-    <!-- BOTTOM NAVIGATION -->
+    <!-- BOTTOM NAV -->
     <nav class="bottom-nav">
         <button class="nav-btn active" data-screen="stocksScreen">Stocks</button>
         <button class="nav-btn" data-screen="fundsScreen">Funds</button>
         <button class="nav-btn" data-screen="portfolioScreen">Portfolio</button>
     </nav>
 
-    <!-- Link JS -->
     <script src="scripts/scripts.js"></script>
 </body>
 </html>
