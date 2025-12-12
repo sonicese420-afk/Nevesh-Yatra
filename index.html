@@ -3,100 +3,90 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Nivesh Yatra</title>
+  <title>Nivesh Yatra — Demo</title>
 
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <link rel="stylesheet" href="style.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="site-header">
     <div class="brand">
-      <img src="logo.png" alt="logo" class="logo" />
+      <img id="siteLogo" src="/A_logo_design_design_features_a_square_icon_with_r.png" alt="logo" class="logo">
       <div class="brand-text">
         <div class="company-name">Nivesh Yatra</div>
         <div class="slogan">Turning dreams into Assets.</div>
       </div>
     </div>
-
     <div class="header-actions">
-      <button id="toggle-visibility" class="icon-btn" title="hide/show amounts">👁️</button>
-      <button id="notifications" class="icon-btn" title="notifications">🔔</button>
+      <button id="toggleView" title="Toggle visibility">👁️</button>
+      <button id="notifications">🔔</button>
     </div>
   </header>
 
-  <main class="container">
+  <main class="main">
     <section class="summary card" id="summary">
       <div class="summary-left">
         <div class="label">MY ASSETS</div>
-        <div id="totalAmount" class="amount">₹0</div>
-        <div id="holdingsCount" class="muted">Holdings: 0</div>
+        <div class="amount" id="totalAssets">₹0</div>
+        <div class="holdings" id="holdingsCount">Holdings: 0</div>
       </div>
-      <div class="summary-right">
-        <div id="dayChange" class="change-pill">+₹0 (0.00%)</div>
+      <div class="summary-right" id="oneDay">
+        <div class="change">+₹0 <small>(0.00%)</small></div>
       </div>
     </section>
 
-    <h1 class="title" id="pageTitle">Buy Stocks</h1>
+    <h1 id="sectionTitle">Buy Stocks</h1>
 
-    <div id="list" class="list" aria-live="polite"></div>
+    <section id="listArea" class="list-area">
+      <!-- cards injected here -->
+    </section>
   </main>
 
   <!-- bottom nav -->
-  <nav class="bottom-nav" id="bottomNav">
-    <button class="tab" data-tab="stocks" id="tab-stocks">📈<span>Stocks</span></button>
-    <button class="tab" data-tab="funds" id="tab-funds">📊<span>Funds</span></button>
-    <button class="tab" data-tab="portfolio" id="tab-portfolio">📁<span>Portfolio</span></button>
+  <nav class="bottom-nav">
+    <button class="tab active" data-tab="stocks">📈 <span>Stocks</span></button>
+    <button class="tab" data-tab="funds">📊 <span>Funds</span></button>
+    <button class="tab" data-tab="portfolio">📁 <span>Portfolio</span></button>
   </nav>
 
-  <!-- FULL PAGE DETAIL (hidden until open) -->
-  <div id="detailPage" class="detail-page hidden" aria-hidden="true">
-    <div class="detail-top">
-      <button id="backButton" class="back-btn">←</button>
-      <div class="detail-title">
-        <div id="detailName" class="detail-name">Reliance Industries Ltd</div>
-        <div id="detailSub" class="detail-sub muted">Stock | RELIANCE</div>
-      </div>
-      <div class="detail-right-head">
-        <div id="detailPrice" class="detail-price">₹0</div>
-        <div id="detailPL" class="detail-pl muted"></div>
-      </div>
-    </div>
+  <!-- full-screen detail modal -->
+  <div id="detailModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-content">
+      <header class="detail-header">
+        <button id="closeDetail">←</button>
+        <div>
+          <div id="detailName" class="detail-name">Reliance Industries Ltd</div>
+          <div id="detailSubtitle" class="detail-sub">Stock | RELIANCE</div>
+        </div>
+        <div class="detail-price">
+          <div id="detailPrice">₹0</div>
+          <div id="detailPL" class="detail-pl"></div>
+        </div>
+      </header>
 
-    <div class="detail-body">
-      <div class="detail-stats card" id="detailTopStats">
-        <!-- top stats (volume, 1D low/high, mktcap) will be injected here -->
-      </div>
-
-      <div class="chart-wrap card">
-        <canvas id="historyChart"></canvas>
-      </div>
-
-      <div class="times-wrap" role="tablist" aria-label="time ranges">
-        <button class="time active" data-range="1d">1D</button>
-        <button class="time" data-range="1w">1W</button>
-        <button class="time" data-range="1m">1M</button>
-        <button class="time" data-range="6m">6M</button>
+      <div class="chart-card card">
+        <canvas id="detailChart"></canvas>
+        <div class="range-controls">
+          <button class="range active" data-range="1d">1D</button>
+          <button class="range" data-range="1w">1W</button>
+          <button class="range" data-range="1m">1M</button>
+          <button class="range" data-range="6m">6M</button>
+          <button class="range" data-range="1y">1Y</button>
+        </div>
       </div>
 
-      <div class="card order-area" id="orderArea">
-        <label for="qtyInput">Qty</label>
-        <input id="qtyInput" type="number" min="1" value="1" />
+      <div class="trade card">
+        <label>Qty <input type="number" id="tradeQty" value="1" min="1"></label>
+        <div class="trade-actions">
+          <button id="sellBtn" class="sell">Sell</button>
+          <button id="buyBtn" class="buy">Buy</button>
+          <button id="sipBtn" class="sip">SIP</button>
+        </div>
       </div>
-    </div>
-
-    <!-- fixed bottom action bar -->
-    <div class="action-bar" id="actionBar">
-      <button id="btnSell" class="btn btn-danger">SELL</button>
-      <button id="btnBuy" class="btn btn-primary">BUY</button>
-      <button id="btnSip" class="btn btn-outline">SIP</button>
     </div>
   </div>
 
-  <!-- toast -->
-  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
-
-  <script src="script.js" defer></script>
+<script src="script.js"></script>
 </body>
 </html>
