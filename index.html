@@ -12,6 +12,54 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+<!-- ===== NY HEADER (place at top of <body>) ===== -->
+<header id="ny-header" class="ny-header">
+  <div class="ny-header-inner">
+    <div class="ny-left">
+      <img src="logo.png" alt="Nivesh Yatra logo" class="ny-logo" id="nyLogo">
+      <div class="ny-title-wrap">
+        <div class="ny-title">Nivesh-Yatra</div>
+        <div class="ny-subtitle">Turning dreams into Assets.</div>
+      </div>
+    </div>
+
+    <div class="ny-right">
+      <div class="ny-icon-btn" id="nyEyeBtn" title="Toggle assets visibility" aria-pressed="false">
+        <!-- simple eye icon -->
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 5c-7 0-11 7-11 7s4 7 11 7 11-7 11-7-4-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
+      </div>
+
+      <div class="ny-icon-btn" id="nyBellBtn" title="Notifications">
+        <!-- bell -->
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a4 4 0 0 0-4 4v1.1c0 .6-.4 1.1-1 1.4-1 .5-2 1.6-2 3.5V15l-1 1v1h16v-1l-1-1v-3c0-1.9-1-3-2-3.5-.6-.3-1-.8-1-1.4V6a4 4 0 0 0-4-4zM7 20a3 3 0 0 0 6 0H7z"/></svg>
+      </div>
+
+      <!-- profile area -->
+      <div id="nyProfileWrap" class="ny-profile-wrap" aria-live="polite">
+        <!-- when not logged in -->
+        <div id="nyAuthBtns" class="ny-auth-btns">
+          <button class="btn btn-ghost" id="nyLoginBtn">Login</button>
+          <button class="btn btn-ghost" id="nySignupBtn">Sign up</button>
+          <button class="btn btn-ghost" id="nyGuestBtn">Continue as Guest</button>
+        </div>
+
+        <!-- when logged in: shows avatar + name -->
+        <div id="nyProfile" class="ny-profile hidden" tabindex="0" aria-hidden="true">
+          <div class="ny-avatar" id="nyAvatar" title="Profile"></div>
+          <div class="ny-username" id="nyUsername">Guest123</div>
+          <div class="ny-caret" id="nyProfileCaret">▾</div>
+
+          <!-- profile dropdown -->
+          <div id="nyProfileMenu" class="ny-profile-menu hidden" role="menu" aria-hidden="true">
+            <div class="menu-item" id="nyViewProfile">View profile</div>
+            <div class="menu-item" id="nyLogout">Logout</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+<!-- ===== END NY HEADER ===== -->
   <!-- HEADER -->
   <header class="app-header">
     <div class="logo-wrap" id="logoWrap">
