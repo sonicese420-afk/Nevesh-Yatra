@@ -1,315 +1,167 @@
-// script.js - improved init + quantity + top stats + toast + guaranteed initial render
-(() => {
-  const stocks = [
-    { symbol: 'RELIANCE', name: 'Reliance Industries Ltd' },
-    { symbol: 'TATAMOTORS', name: 'Tata Motors' },
-    { symbol: 'WIPRO', name: 'Wipro' },
-    { symbol: 'MRF', name: 'MRF' },
-    { symbol: 'HDFC', name: 'HDFC' },
-    { symbol: 'AFFLE', name: 'Affle 3i Ltd' }
-  ];
+// Simple demo JS: renders lists, handles modal, stores portfolio in localStorage
+const stocks = [
+  {id:'RELIANCE', name:'Reliance Industries Ltd', price:1398.07, symbol:'RE'},
+  {id:'TATAMOT', name:'Tata Motors', price:1006.98, symbol:'TM'},
+  {id:'ADANIGREEN', name:'Adani Green', price:1181.45, symbol:'AG'},
+  {id:'WIPRO', name:'Wipro', price:1485.01, symbol:'W'},
+  {id:'MRF', name:'MRF', price:1898.78, symbol:'M'}
+];
 
-  function randPrice(min, max) { return +(Math.random() * (max-min) + min).toFixed(2); }
-  function getLivePrices(){ const p={}; stocks.forEach(s=>{ const min=200+Math.random()*400; const max=min + (900*Math.random()); p[s.symbol]=randPrice(min,max);}); return p; }
+const funds = [
+  {id:'EDEL', name:'Edelweiss Nifty Midcap150 Momentum 50 Index Fund', price:232.4, symbol:'ED'},
+  {id:'HDFC_MID', name:'HDFC Mid Cap Fund', price:132.76, symbol:'HD'},
+  {id:'HDFC_SM', name:'HDFC Small Cap Fund', price:276.12, symbol:'HD2'},
+  {id:'NIPPON_LC', name:'Nippon India Large Cap Fund', price:412.8, symbol:'NI'},
+  {id:'SBI_LC', name:'SBI Large Cap Fund', price:299.5, symbol:'SB'},
+  {id:'NIPPON_MC', name:'Nippon India Growth Mid Cap Fund', price:188.5, symbol:'NM'},
+  {id:'NIPPON_SC', name:'Nippon India Small Cap Fund', price:172.2, symbol:'NS'},
+  {id:'HDFC_LC', name:'HDFC Large Cap Fund', price:240.1, symbol:'HL'}
+];
 
-  const LS_KEY = 'nv_portfolio_v1';
-  function loadPortfolio(){ try{return JSON.parse(localStorage.getItem(LS_KEY))||{};}catch(e){return{};} }
-  function savePortfolio(data){ localStorage.setItem(LS_KEY, JSON.stringify(data)); }
+// localStorage portfolio
+let portfolio = JSON.parse(localStorage.getItem('nv_portfolio')||'{}');
 
-  // UI refs
-  const listEl = document.getElementById('list');
-  const totalAmountEl = document.getElementById('totalAmount');
-  const holdingsCountEl = document.getElementById('holdingsCount');
-  const dayChangeEl = document.getElementById('dayChange');
-  const pageTitle = document.getElementById('pageTitle');
+const listArea = document.getElementById('listArea');
+const sectionTitle = document.getElementById('sectionTitle');
+const summaryAssets = document.getElementById('totalAssets');
+const holdingsCount = document.getElementById('holdingsCount');
 
-  const tabStocks = document.getElementById('tab-stocks');
-  const tabFunds = document.getElementById('tab-funds');
-  const tabPortfolio = document.getElementById('tab-portfolio');
-  const bottomNav = document.getElementById('bottomNav');
+function formatRupee(x){return '₹'+Number(x).toLocaleString(undefined,{maximumFractionDigits:2})}
 
-  // detail page refs
-  const detailPage = document.getElementById('detailPage');
-  const backButton = document.getElementById('backButton');
-  const detailName = document.getElementById('detailName');
-  const detailSub = document.getElementById('detailSub');
-  const detailPrice = document.getElementById('detailPrice');
-  const detailPL = document.getElementById('detailPL');
-  const historyCanvas = document.getElementById('historyChart');
-  const timesBtns = document.querySelectorAll('.time');
-  const qtyInput = document.getElementById('qtyInput');
-  const detailTopStats = document.getElementById('detailTopStats');
-  const toast = document.getElementById('toast');
+function calcSummary(){
+  let total=0, count=0;
+  Object.values(portfolio).forEach(h=>{ total += h.qty*(h.current||h.price); count += h.qty?1:0});
+  summaryAssets.textContent = formatRupee(total || 0);
+  holdingsCount.textContent = `Holdings: ${Object.keys(portfolio).length}`;
+}
 
-  const btnBuy = document.getElementById('btnBuy');
-  const btnSell = document.getElementById('btnSell');
-  const btnSip = document.getElementById('btnSip');
+function createCard(item, type){
+  const card = document.createElement('div');card.className='card item';
+  card.dataset.id = item.id; card.dataset.type = type;
+  const left = document.createElement('div');left.className='item-left';
+  const avatar = document.createElement('div');avatar.className='avatar';avatar.textContent = item.symbol.slice(0,2);
+  const text = document.createElement('div');
+  const title = document.createElement('div');title.className='item-title'; title.textContent = item.name;
+  const sub = document.createElement('div'); sub.className='item-sub'; sub.textContent = (type==='stock'? 'Stock | ' : 'Fund | ') + item.id;
+  text.append(title, sub);
+  left.append(avatar, text);
 
-  // state
-  let livePrices = getLivePrices();
-  let portfolio = loadPortfolio();
-  let currentStock = null;
-  let currentRange = '1d';
-  let chart = null;
+  const right = document.createElement('div'); right.className='item-right';
+  const price = document.createElement('div'); price.className='item-price'; price.textContent = formatRupee(item.price);
+  const change = document.createElement('div'); change.className='item-change';
 
-  function fmtRs(n){ return '₹' + (Math.round(n*100)/100).toLocaleString('en-IN'); }
-  function fmtPerc(p){ return (Math.round(p*100)/100).toFixed(2) + '%'; }
-
-  function showToast(text, timeout=1800){
-    toast.textContent = text;
-    toast.classList.remove('hidden');
-    clearTimeout(toast._t);
-    toast._t = setTimeout(()=> toast.classList.add('hidden'), timeout);
+  // show arrow + percent only if owned in portfolio
+  if(portfolio[item.id]){
+    const p = Math.round(((item.price - (portfolio[item.id].avg||item.price))/ (portfolio[item.id].avg||item.price))*10000)/100;
+    const sign = p>=0? '▲':'▼';
+    change.textContent = `${sign} ${Math.abs(p)}%`;
+    change.style.color = p>=0? 'var(--success)':'var(--danger)';
   }
 
-  function renderStocksList(){
-    pageTitle.textContent = 'Buy Stocks';
-    listEl.innerHTML = '';
-    stocks.forEach(s => {
-      const card = document.createElement('div');
-      card.className = 'stock-card card';
+  right.append(price, change);
+  card.append(left, right);
 
-      const left = document.createElement('div');
-      left.className = 'left';
-      const avatar = document.createElement('div'); avatar.className = 'avatar'; avatar.textContent = s.symbol.slice(0,2);
-      const info = document.createElement('div'); info.className = 'stock-info';
-      info.innerHTML = `<div class="name">${s.name}</div><div class="sub">Stock | ${s.symbol}</div>`;
-      left.appendChild(avatar); left.appendChild(info);
+  card.addEventListener('click', ()=> openDetail(item, type));
+  return card;
+}
 
-      const right = document.createElement('div'); right.className = 'right';
-      const price = livePrices[s.symbol] || randPrice(100,1000);
-      const priceEl = document.createElement('div'); priceEl.className='price'; priceEl.textContent = fmtRs(price);
-
-      // show owned indicator only if owned
-      const owned = portfolio[s.symbol];
-      if(owned && owned.qty>0){
-        const changePill = document.createElement('div');
-        const plPerc = ((price - owned.avgPrice)/owned.avgPrice)*100;
-        changePill.className = 'owned-pill';
-        changePill.textContent = (plPerc>=0?'▲ ':'▼ ')+Math.abs(plPerc).toFixed(2)+'%';
-        right.appendChild(changePill);
-      }
-
-      right.appendChild(priceEl);
-      card.appendChild(left);
-      card.appendChild(right);
-
-      // click opens full detail page
-      card.addEventListener('click', ()=> openDetail(s.symbol));
-      listEl.appendChild(card);
-    });
-  }
-
-  function renderFundsList(){
-    pageTitle.textContent = 'Mutual Funds';
-    listEl.innerHTML = '';
-    const funds = [
-      { id:'EDEL', name:'Edelweiss Nifty Midcap150 Momentum 50 Index Fund' },
-      { id:'HDFC_MID', name:'HDFC Mid Cap Fund' },
-      { id:'HDFC_SM', name:'HDFC Small Cap Fund' }
-    ];
-    funds.forEach(f=>{
-      const card = document.createElement('div'); card.className='stock-card card';
-      card.innerHTML = `<div class="left"><div class="avatar">${f.id.slice(0,2)}</div>
-        <div class="stock-info"><div class="name">${f.name}</div><div class="sub">Fund | ${f.id}</div></div></div>
-        <div class="right"><div class="price">${fmtRs(randPrice(60,300))}</div></div>`;
-      card.addEventListener('click', ()=> openDetail(f.id));
-      listEl.appendChild(card);
-    });
-  }
-
-  function renderPortfolio(){
-    pageTitle.textContent = 'Your Portfolio';
-    listEl.innerHTML = '';
-    let total=0, holdings=0, pnl=0;
-    Object.keys(portfolio).forEach(sym=>{
-      const it = portfolio[sym];
-      if(!it || it.qty<=0) return;
-      const price = livePrices[sym] || randPrice(100,1000);
-      total += price*it.qty;
-      holdings += it.qty;
-      pnl += (price - it.avgPrice)*it.qty;
-      const card = document.createElement('div'); card.className='stock-card card';
-      card.innerHTML = `<div class="left"><div class="avatar">${sym.slice(0,2)}</div>
-        <div class="stock-info"><div class="name">${stocks.find(s=>s.symbol===sym)?.name || sym}</div>
-        <div class="sub">Owned • ${it.qty} @ ${fmtRs(it.avgPrice)}</div></div></div>
-        <div class="right"><div class="price">${fmtRs(price)}</div><div class="owned-pill">${((price-it.avgPrice)/it.avgPrice*100).toFixed(2)}%</div></div>`;
-      card.addEventListener('click', ()=> openDetail(sym));
-      listEl.appendChild(card);
-    });
-    totalAmountEl.textContent = fmtRs(total);
-    holdingsCountEl.textContent = 'Holdings: ' + holdings;
-    dayChangeEl.textContent = (pnl>=0 ? '＋':'') + fmtRs(pnl) + ` (${ total ? fmtPerc((pnl/Math.max(total,1))*100) : '0.00%'})`;
-
-    if(Object.keys(portfolio).filter(s=>portfolio[s].qty>0).length === 0){
-      const info = document.createElement('div'); info.className='card'; info.style.margin='12px';
-      info.textContent = 'You have no holdings yet. Buy from stocks or funds.';
-      listEl.appendChild(info);
+function renderList(tab){
+  listArea.innerHTML='';
+  if(tab==='stocks'){ sectionTitle.textContent='Buy Stocks'; stocks.forEach(s=>listArea.appendChild(createCard(s,'stock'))) }
+  else if(tab==='funds'){ sectionTitle.textContent='Mutual Funds'; funds.forEach(f=>listArea.appendChild(createCard(f,'fund'))) }
+  else { sectionTitle.textContent='Your Portfolio';
+    if(Object.keys(portfolio).length===0){ listArea.innerHTML='<div class="card">No holdings yet — buy from Stocks or Funds.</div>' }
+    else{
+      Object.values(portfolio).forEach(h=>{
+        const item = (stocks.concat(funds)).find(x=>x.id===h.id) || {id:h.id,name:h.name,price:h.current||h.price,symbol:h.symbol||h.id.slice(0,2)};
+        const card = createCard(item, h.type);
+        // show qty and P/L in subtitle area
+        const qty = document.createElement('div'); qty.className='item-sub'; qty.textContent = `Qty: ${h.qty} • Avg: ${formatRupee(h.avg)} • P/L: ${formatRupee((item.price - h.avg)*h.qty)}`;
+        card.querySelector('.item-sub').replaceWith(qty);
+        listArea.appendChild(card);
+      })
     }
   }
+}
 
-  // open full page detail
-  function openDetail(symbol){
-    currentStock = symbol;
-    bottomNav.style.display = 'none'; // hide bottom nav for full-screen feel
-    detailPage.classList.remove('hidden'); detailPage.setAttribute('aria-hidden','false');
+// bottom nav
+document.querySelectorAll('.bottom-nav .tab').forEach(btn=>btn.addEventListener('click', (e)=>{
+  document.querySelectorAll('.bottom-nav .tab').forEach(t=>t.classList.remove('active'));
+  e.currentTarget.classList.add('active'); renderList(e.currentTarget.dataset.tab);
+}));
 
-    const sObj = stocks.find(s=>s.symbol===symbol) || { name:symbol, symbol };
-    detailName.textContent = sObj.name;
-    detailSub.textContent = `Stock | ${symbol}`;
+// detail modal and chart
+const modal = document.getElementById('detailModal');
+const closeDetail = document.getElementById('closeDetail');
+const detailName = document.getElementById('detailName');
+const detailSubtitle = document.getElementById('detailSubtitle');
+const detailPrice = document.getElementById('detailPrice');
+const detailPL = document.getElementById('detailPL');
+let currentDetail=null;
 
-    const price = livePrices[symbol] || randPrice(100,1000);
-    detailPrice.textContent = fmtRs(price);
+closeDetail.addEventListener('click', ()=>{ modal.classList.add('hidden'); modal.setAttribute('aria-hidden','true'); });
 
-    const owned = portfolio[symbol];
-    if(owned && owned.qty>0){
-      const plPerc = ((price - owned.avgPrice)/owned.avgPrice)*100;
-      detailPL.textContent = (plPerc>=0 ? '▲ ':'▼ ') + Math.abs(plPerc).toFixed(2) + '%';
-      detailPL.style.color = plPerc>=0 ? 'var(--success)' : 'var(--danger)';
-    } else {
-      detailPL.textContent = '';
-      detailPL.style.color = '';
-    }
+function openDetail(item, type){
+  currentDetail = { ...item, type };
+  detailName.textContent = item.name;
+  detailSubtitle.textContent = (type==='stock'?'Stock | ':'Fund | ') + item.id;
+  detailPrice.textContent = formatRupee(item.price);
+  const owned = portfolio[item.id];
+  if(owned){ detailPL.textContent = `${owned.qty} held • P/L ${formatRupee((item.price - owned.avg)*owned.qty)}`; }
+  else detailPL.textContent = '';
+  modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false');
+  renderChart(item);
+}
 
-    // fill top stats with mock values
-    detailTopStats.innerHTML = `
-      <div class="stat"><div class="muted">Volume</div><div>${Math.floor(Math.random()*1000000).toLocaleString()}</div></div>
-      <div class="stat"><div class="muted">1D Low / High</div><div>${fmtRs(price-40)} / ${fmtRs(price+40)}</div></div>
-      <div class="stat"><div class="muted">Mkt Cap</div><div>₹${(Math.floor(Math.random()*2000000)).toLocaleString()} Cr</div></div>
-    `;
+let detailChart=null;
+function renderChart(item, range='1d'){
+  // create mock series for ranges
+  const labels = []; const data = [];
+  const points = range==='1d'? 60 : range==='1w'? 28 : range==='1m'?30: range==='6m'?180:365;
+  for(let i=0;i<points;i++){ labels.push(i); const noise = (Math.sin(i/6)+Math.random()*0.6); data.push(Math.max(1,item.price*(1 + (noise-0.5)/50))); }
 
-    qtyInput.value = 1;
-    // build chart with currentRange
-    buildChart(symbol, currentRange);
+  const ctx = document.getElementById('detailChart').getContext('2d');
+  if(detailChart) detailChart.destroy();
+  detailChart = new Chart(ctx, { type:'line', data:{ labels, datasets:[{ label: item.name, data, borderColor: 'rgba(46, 203, 120,1)', backgroundColor:'rgba(46,203,120,0.06)', tension:0.3, pointRadius:0}]}, options:{ responsive:true, maintainAspectRatio:false, scales:{x:{display:false}, y:{grid:{color:'rgba(255,255,255,0.03)'}}}, plugins:{legend:{display:false}}});
+}
+
+// range buttons
+document.querySelectorAll('.range').forEach(btn=>btn.addEventListener('click', e=>{
+  document.querySelectorAll('.range').forEach(b=>b.classList.remove('active')); e.currentTarget.classList.add('active');
+  if(currentDetail) renderChart(currentDetail, e.currentTarget.dataset.range);
+}));
+
+// trade buttons
+document.getElementById('buyBtn').addEventListener('click', ()=>trade('buy'));
+document.getElementById('sellBtn').addEventListener('click', ()=>trade('sell'));
+document.getElementById('sipBtn').addEventListener('click', ()=>trade('sip'));
+
+function trade(action){
+  const qty = Number(document.getElementById('tradeQty').value)||1;
+  if(!currentDetail) return;
+  const id = currentDetail.id; const type=currentDetail.type; const price=currentDetail.price;
+  if(action==='buy' || action==='sip'){
+    if(!portfolio[id]) portfolio[id] = {id, name:currentDetail.name, type, qty:0, avg:0, price};
+    const h = portfolio[id];
+    const newQty = h.qty + qty;
+    h.avg = (h.avg*h.qty + price*qty)/newQty; h.qty = newQty; h.current = price; localStorage.setItem('nv_portfolio', JSON.stringify(portfolio));
+  } else if(action==='sell'){
+    const h = portfolio[id]; if(!h || h.qty===0) return alert('No holdings to sell');
+    h.qty = Math.max(0, h.qty - qty); if(h.qty===0) delete portfolio[id]; localStorage.setItem('nv_portfolio', JSON.stringify(portfolio));
   }
+  calcSummary(); renderList(document.querySelector('.bottom-nav .tab.active').dataset.tab);
+  openDetail(currentDetail, type); // refresh pl
+}
 
-  function closeDetail(){
-    currentStock = null;
-    detailPage.classList.add('hidden'); detailPage.setAttribute('aria-hidden','true');
-    bottomNav.style.display = 'flex';
-    if(chart){ chart.destroy(); chart = null; }
-  }
-  backButton.addEventListener('click', closeDetail);
+// initial render
+calcSummary(); renderList('stocks');
 
-  // chart logic (line with random walk)
-  function genSeries(range){
-    const pts=[]; let count;
-    if(range==='1d'){ count = 48; } // 48 points
-    else if(range==='1w'){ count = 28; }
-    else if(range==='1m'){ count = 30; }
-    else if(range==='6m'){ count = 180; } else count = 48;
-    let base = randPrice(200,1500);
-    for(let i=0;i<count;i++){
-      base = Math.max(1, base + (Math.random()-0.5)*(base*0.02));
-      pts.push(+base.toFixed(2));
-    }
-    return pts;
-  }
+// refresh price mock every 10s
+setInterval(()=>{
+  [...stocks,...funds].forEach(it=>{ const delta = (Math.random()-0.5)*2; it.price = Math.max(1, it.price*(1+delta/200)); });
+  renderList(document.querySelector('.bottom-nav .tab.active').dataset.tab);
+  calcSummary();
+},10000);
 
-  function buildChart(symbol, range){
-    const ctx = historyCanvas.getContext('2d');
-    const data = genSeries(range);
-    if(chart) { chart.destroy(); chart = null; }
-    chart = new Chart(ctx, {
-      type: 'line',
-      data: { labels: data.map((_,i)=>i), datasets: [{ data, borderColor:'#2ecc71', backgroundColor:'rgba(46,204,113,0.03)', tension:0.25, pointRadius:0 }] },
-      options: { maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{display:false}, y:{ grid:{color:'rgba(255,255,255,0.03)'}, ticks:{color:'rgba(255,255,255,0.7)'} } } }
-    });
-  }
-
-  // time buttons
-  timesBtns.forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      timesBtns.forEach(b=>b.classList.remove('active')); btn.classList.add('active');
-      currentRange = btn.dataset.range;
-      if(currentStock) buildChart(currentStock, currentRange);
-    });
-  });
-
-  // buy/sell/sip actions
-  btnBuy.addEventListener('click', ()=> {
-    if(!currentStock) return;
-    const qty = Math.max(1, parseInt(qtyInput.value) || 1);
-    const price = livePrices[currentStock] || randPrice(100,1000);
-    const prev = portfolio[currentStock] || { qty:0, avgPrice:0 };
-    const newQty = prev.qty + qty;
-    const newAvg = ((prev.avgPrice * prev.qty) + price * qty) / newQty;
-    portfolio[currentStock] = { qty:newQty, avgPrice:+newAvg.toFixed(2) };
-    savePortfolio(portfolio); refreshAll();
-    showToast(`Bought ${qty} ${currentStock} @ ${fmtRs(price)}`);
-  });
-  btnSell.addEventListener('click', ()=> {
-    if(!currentStock) return;
-    const prev = portfolio[currentStock] || { qty:0, avgPrice:0 };
-    const qty = Math.min(Math.max(1, parseInt(qtyInput.value)||1), prev.qty || 0);
-    if(!prev || prev.qty < 1) { showToast('No holdings to sell'); return; }
-    const price = livePrices[currentStock] || randPrice(100,1000);
-    const remaining = prev.qty - qty;
-    if(remaining === 0) delete portfolio[currentStock];
-    else portfolio[currentStock] = { qty: remaining, avgPrice: prev.avgPrice };
-    savePortfolio(portfolio); refreshAll();
-    showToast(`Sold ${qty} ${currentStock} @ ${fmtRs(price)}`);
-  });
-  btnSip.addEventListener('click', ()=> showToast('SIP action (placeholder)'));
-
-  // tabs and render control
-  function activateTab(tab){
-    [tabStocks, tabFunds, tabPortfolio].forEach(t=>t.classList.remove('active'));
-    if(tab==='stocks') tabStocks.classList.add('active');
-    else if(tab==='funds') tabFunds.classList.add('active');
-    else tabPortfolio.classList.add('active');
-
-    if(tab==='stocks') renderStocksList();
-    else if(tab==='funds') renderFundsList();
-    else renderPortfolio();
-  }
-  tabStocks.addEventListener('click', ()=> activateTab('stocks'));
-  tabFunds.addEventListener('click', ()=> activateTab('funds'));
-  tabPortfolio.addEventListener('click', ()=> activateTab('portfolio'));
-
-  // refresh / totals
-  function refreshAll(){
-    livePrices = getLivePrices();
-    // totals
-    let total=0, holdings=0, pnl=0;
-    for(const sym in portfolio){
-      const it = portfolio[sym];
-      if(!it || it.qty<=0) continue;
-      const price = livePrices[sym] || randPrice(100,1000);
-      total += price*it.qty;
-      holdings += it.qty;
-      pnl += (price - it.avgPrice)*it.qty;
-    }
-    totalAmountEl.textContent = fmtRs(total);
-    holdingsCountEl.textContent = 'Holdings: ' + holdings;
-    dayChangeEl.textContent = (pnl>=0 ? '＋':'') + fmtRs(pnl) + ` (${ total? fmtPerc((pnl/Math.max(total,1))*100) : '0.00%'})`;
-
-    const activeTab = document.querySelector('.tab.active')?.dataset?.tab || 'stocks';
-    if(activeTab==='stocks') renderStocksList();
-    else if(activeTab==='funds') renderFundsList();
-    else renderPortfolio();
-  }
-
-  // hide/show toggle
-  const toggleVisibilityBtn = document.getElementById('toggle-visibility');
-  let hidden=false;
-  toggleVisibilityBtn.addEventListener('click', ()=> {
-    hidden = !hidden;
-    if(hidden){ totalAmountEl.textContent='****'; dayChangeEl.textContent='****'; }
-    else refreshAll();
-  });
-
-  // init
-  function init(){
-    // guarantee initial tab/render state
-    activateTab('stocks');
-    // periodic pseudo-live updates
-    setInterval(()=> {
-      livePrices = getLivePrices();
-      if(detailPage.classList.contains('hidden')) refreshAll();
-      else { if(currentStock) buildChart(currentStock, currentRange); }
-    }, 20000);
-  }
-
-  init();
-})();
+// expose for debugging
+window._nv = {stocks,funds,portfolio};
