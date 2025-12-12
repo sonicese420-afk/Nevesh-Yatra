@@ -5,164 +5,88 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Nivesh Yatra — Demo</title>
 
-  <!-- LINK styles.css -->
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="styles/header.css">
+  <!-- main stylesheet -->
+  <link rel="stylesheet" href="styles/styles.css" />
 
-  <!-- Chart.js CDN (for demo graphs) -->
+  <!-- Chart.js CDN (used by script) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<!-- ===== NY HEADER (place at top of <body>) ===== -->
-<header id="ny-header" class="ny-header">
-  <div class="ny-header-inner">
-    <div class="ny-left">
-      <img src="logo.png" alt="Nivesh Yatra logo" class="ny-logo" id="nyLogo">
-      <div class="ny-title-wrap">
-        <div class="ny-title">Nivesh-Yatra</div>
-        <div class="ny-subtitle">Turning dreams into Assets.</div>
-      </div>
-    </div>
-<div class="ny-right">
-
-  <!-- compact icon buttons -->
-  <div class="ny-icon-row">
-    <button class="ny-icon-btn" id="nyEyeBtn" title="Toggle assets visibility" aria-label="Toggle assets">
-      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-        <path d="M12 5c-7 0-11 7-11 7s4 7 11 7 11-7 11-7-4-7-11-7zm0 12a5 5 0 110-10 5 5 0 010 10z"></path>
-      </svg>
-    </button>
-
-    <button class="ny-icon-btn" id="nyBellBtn" title="Notifications" aria-label="Notifications">
-      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-        <path d="M12 22a2 2 0 002-2H10a2 2 0 002 2zm6-6V11c0-3.07-1.63-5.64-4.5-6.32V4a1.5 1.5 0 10-3 0v0.68C7.63 5.36 6 7.92 6 11v5l-1.9 1.9A1 1 0 005 20h14a1 1 0 00.9-1.1L18 16z"></path>
-      </svg>
-    </button>
-  </div>
-
-  <!-- profile / guest chip (single element only) -->
-  <div class="ny-profile-area">
-    <button id="nyGuestChip" class="ny-guest-chip" title="Continue as guest">
-      <span class="ny-guest-initial">G</span>
-      <span class="ny-guest-name">Guest168</span>
-    </button>
-  </div>
-
-</div> <!-- end ny-right -->
-    
-
-        <!-- when logged in: shows avatar + name -->
-        <div id="nyProfile" class="ny-profile hidden" tabindex="0" aria-hidden="true">
-          <div class="ny-avatar" id="nyAvatar" title="Profile"></div>
-          <div class="ny-username" id="nyUsername">Guest123</div>
-          <div class="ny-caret" id="nyProfileCaret">▾</div>
-
-          <!-- profile dropdown -->
-          <div id="nyProfileMenu" class="ny-profile-menu hidden" role="menu" aria-hidden="true">
-            <div class="menu-item" id="nyViewProfile">View profile</div>
-            <div class="menu-item" id="nyLogout">Logout</div>
-          </div>
+  <!-- ===== HEADER ===== -->
+  <header id="ny-header" class="ny-header" role="banner">
+    <div class="ny-header-inner">
+      <div class="ny-left">
+        <img src="logo.png" alt="Nivesh Yatra logo" class="ny-logo" id="nyLogo">
+        <div class="ny-title-wrap">
+          <div class="ny-title">Nivesh-Yatra</div>
+          <div class="ny-subtitle">Turning dreams into Assets.</div>
         </div>
       </div>
-    </div>
-  </div>
-</header>
-<!-- ===== END NY HEADER ===== -->
-  <!-- HEADER -->
-  <header class="app-header">
-    <div class="logo-wrap" id="logoWrap">
-      <!-- PLACEHOLDER: replace inside with <img src="..."> for your logo -->
-      <div class="logo-badge">NY</div>
-    </div>
-    <div class="title-wrap">
-      <h1 class="app-title">Nivesh Yatra</h1>
-      <div class="app-sub">Turning dreams into Assets.</div>
-    </div>
-    <div class="header-actions">
-      <button id="toggleView" title="Toggle hide values">👁️</button>
-      <button id="notifications" title="Notifications">🔔</button>
+
+      <div class="ny-right">
+        <button class="ny-icon-btn" id="nyEyeBtn" title="Toggle assets visibility">👁️</button>
+        <button class="ny-icon-btn" id="nyBellBtn" title="Notifications">🔔</button>
+
+        <!-- guest chip (single element) -->
+        <div id="nyGuestChip" class="ny-guest-chip" title="Continue as guest">
+          <span class="ny-guest-initial">G</span>
+          <span class="ny-guest-name" id="nyGuestName">Guest168</span>
+        </div>
+      </div>
     </div>
   </header>
 
-  <!-- ASSETS CARD -->
-  <section class="assets-card" id="assetsCard">
-    <div class="assets-left">
-      <div class="assets-label">MY ASSETS</div>
-      <div id="totalValue" class="assets-value">₹0</div>
-      <div id="holdingsCount" class="assets-hold">Holdings: 0</div>
-    </div>
-    <div class="assets-right">
-      <div id="dailyChange" class="change-badge">+₹0 (0.00%)</div>
-    </div>
-  </section>
-
-  <!-- NAV TABS -->
-  <nav class="main-tabs" role="navigation">
-    <button class="tab active" data-tab="stocks">Stocks</button>
-    <button class="tab" data-tab="funds">Funds</button>
-    <button class="tab" data-tab="portfolio">Portfolio</button>
-  </nav>
-
-  <!-- MAIN CONTENT -->
+  <!-- ===== MAIN ===== -->
   <main id="mainContent">
+    <section class="assets-card" id="assetsCard">
+      <div class="assets-left">
+        <div class="assets-label">MY ASSETS</div>
+        <div class="assets-value" id="totalValue">₹0</div>
+        <div class="assets-hold" id="holdingsCount">Holdings: 0</div>
+      </div>
+      <div class="assets-right">
+        <div id="dailyChange" class="change-badge">+₹0 (0.00%)</div>
+      </div>
+    </section>
+
+    <!-- tabs -->
+    <div class="nav-tabs">
+      <button class="tab btn-active" data-tab="stocks">Stocks</button>
+      <button class="tab" data-tab="funds">Funds</button>
+      <button class="tab" data-tab="portfolio">Portfolio</button>
+    </div>
+
     <h2 class="section-title">Buy Stocks</h2>
 
-    <!-- STOCK LIST -->
+    <!-- stock list -->
     <div id="stockList" class="list">
-      <!--
-        INSERT STOCK ITEMS HERE:
-        Each item should be a .list-item with data-id and structure as in sample below
-        Sample item (already added via JS on first load):
-        <div class="list-item" data-symbol="RE" data-id="reliance">
-          <div class="list-left"><div class="avatar">RE</div></div>
-          <div class="list-middle">
-            <div class="name">Reliance Industries Ltd</div>
-            <div class="meta">Stock | RELIANCE</div>
-          </div>
-          <div class="list-right">
-            <div class="price">₹1,398.07</div>
-          </div>
-        </div>
-      -->
+      <!-- items are inserted by JS -->
     </div>
   </main>
 
-  <!-- BOTTOM NAV (floating) -->
-  <div class="bottom-nav">
+  <!-- ===== BOTTOM NAV ===== -->
+  <div class="bottom-nav" role="navigation" aria-label="Main navigation">
     <button class="bn active" data-tab="stocks">📈 Stocks</button>
     <button class="bn" data-tab="funds">📊 Funds</button>
     <button class="bn" data-tab="portfolio">📁 Portfolio</button>
   </div>
 
-  <!-- STOCK DETAIL MODAL (full-page slide-up) -->
-  <div id="detailModal" class="modal hidden" role="dialog" aria-hidden="true">
-    <div class="modal-inner" role="document">
+  <!-- ===== DETAIL MODAL (full screen slide-up) ===== -->
+  <div id="detailModal" class="modal hide" role="dialog" aria-hidden="true">
+    <div class="modal-inner">
       <header class="modal-head">
         <div class="modal-head-left">
-          <div id="modalAvatar" class="avatar">RE</div>
-          <div>
-            <div id="modalTitle" class="modal-title">Reliance Industries Ltd</div>
-            <div id="modalSub" class="modal-sub">STOCK | RELIANCE</div>
-          </div>
+          <div id="modalAvatar" class="modal-avatar">RE</div>
+          <div class="modal-title" id="modalTitle">Reliance Industries Ltd</div>
+          <div class="modal-sub" id="modalSub">STOCK | RELIANCE</div>
         </div>
-        <button id="closeModal" class="modal-close">✕</button>
+        <button id="closeModal" class="modal-close" title="Close">✕</button>
       </header>
 
-      <!-- GRAPH AREA (fixed height to prevent stretch) -->
       <div class="modal-chart-wrap">
-        <canvas id="stockChart" width="800" height="260"></canvas>
+        <canvas id="stockChart" width="800" height="280"></canvas>
       </div>
 
-      <!-- timeframe buttons -->
-      <div class="timeframe">
-        <button class="tf active" data-range="1D">1D</button>
-        <button class="tf" data-range="1W">1W</button>
-        <button class="tf" data-range="1M">1M</button>
-        <button class="tf" data-range="6M">6M</button>
-        <button class="tf" data-range="1Y">1Y</button>
-      </div>
-
-      <!-- BUY / SELL / SIP controls -->
       <div class="trade-controls">
         <label>Qty <input id="tradeQty" type="number" min="1" value="1"></label>
         <div class="trade-buttons">
@@ -172,22 +96,19 @@
         </div>
       </div>
 
-      <!-- tabs inside modal -->
       <div class="modal-tabs">
         <button class="m-tab active" data-tab="details">Details</button>
         <button class="m-tab" data-tab="orders">Orders</button>
         <button class="m-tab" data-tab="news">News</button>
       </div>
 
-      <!-- content placeholder (details/orders/news) -->
       <div id="modalContent" class="modal-content">
         <div class="details-panel">No details yet.</div>
       </div>
     </div>
   </div>
 
-  <!-- LINK script.js -->
-  <script src="scripts/header.js"></script>
-<script src="scripts/main.js"></script>
+  <!-- ===== SCRIPTS ===== -->
+  <script src="scripts/main.js"></script>
 </body>
-</html>
+  </html>
