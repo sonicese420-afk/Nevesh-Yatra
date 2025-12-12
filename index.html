@@ -3,21 +3,72 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Nivesh Yatra — Demo</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Nivesh Yatra — Self-contained test</title>
+  <style>
+    /* ---------- inline CSS (same styles as before, defensive) ---------- */
+:root{--bg-1:#031617;--bg-2:#071b1b;--accent:#2fd59f;--muted:#9fb6b3;--text:#eaf6f3;--radius:14px}
+*{box-sizing:border-box}html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:linear-gradient(180deg,var(--bg-1) 0%,var(--bg-2) 100%);color:var(--text);-webkit-font-smoothing:antialiased}
+.app-header{display:flex;gap:12px;align-items:center;padding:14px 16px;background:linear-gradient(90deg,#2d8e7f,#2b8e7e);position:sticky;top:0;z-index:50;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.logo-btn{display:inline-flex;align-items:center;justify-content:center;border-radius:12px;background:rgba(255,255,255,.04);padding:6px}
+.brand{display:flex;flex-direction:column;gap:2px}
+.brand .title{font-size:18px;font-weight:800}
+.brand .subtitle{font-size:12px;color:rgba(255,255,255,.9)}
+.header-actions{margin-left:auto;display:flex;gap:8px}
+.icon-btn{background:rgba(255,255,255,.04);border-radius:10px;padding:8px}
+.app-container{padding:18px;padding-bottom:120px;max-width:980px;margin:0 auto}
+.assets-card{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.12));padding:14px;border-radius:var(--radius);box-shadow:0 20px 40px rgba(0,0,0,.45);margin-bottom:18px}
+.assets-label{font-size:12px;color:var(--muted);font-weight:700}
+.assets-value{font-size:28px;font-weight:900;margin-top:4px}
+.assets-holdings{color:var(--muted);margin-top:6px}
+.assets-change{background:rgba(47,213,159,.12);padding:10px 14px;border-radius:20px;color:var(--accent);font-weight:800}
+.tabs{display:flex;gap:10px;margin-bottom:10px}
+.tab{cursor:pointer;background:rgba(255,255,255,.01);color:var(--muted);padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.02);font-weight:700}
+.tab.active{color:var(--text);background:rgba(255,255,255,.03)}
+.section-title{font-size:28px;margin:6px 0 12px;font-weight:900}
+.list{display:flex;flex-direction:column;gap:12px;min-height:80px}
+.item{display:flex;justify-content:space-between;gap:12px;padding:12px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.01),rgba(0,0,0,.08));align-items:center;box-shadow:0 10px 18px rgba(0,0,0,.4)}
+.left{display:flex;gap:12px;align-items:center}
+.avatar{width:52px;height:52px;border-radius:12px;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--muted);font-size:15px}
+.meta{display:flex;flex-direction:column}
+.meta .name{font-weight:800;font-size:16px}
+.meta .sub{font-size:12px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.02em}
+.price{font-weight:900;text-align:right;min-width:110px}
+.bottom-pill{position:fixed;left:50%;transform:translateX(-50%);bottom:86px;background:rgba(0,0,0,.6);padding:14px 18px;border-radius:34px;display:flex;gap:18px;z-index:40;box-shadow:0 20px 40px rgba(0,0,0,.45)}
+.pill-btn{background:transparent;border:none;color:var(--muted);padding:8px 12px;border-radius:18px;font-weight:800;cursor:pointer}
+.pill-btn.active{background:rgba(255,255,255,.04);color:var(--text)}
+.detail-overlay{position:fixed;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.95),rgba(0,0,0,.98));z-index:100;display:flex;flex-direction:column;padding:18px;overflow:auto}
+.detail-close{position:absolute;right:16px;top:16px;background:rgba(255,255,255,.04);border:none;padding:8px;border-radius:10px;color:var(--text);cursor:pointer}
+.detail-header{display:flex;justify-content:space-between;align-items:center;margin-top:6px;margin-bottom:8px}
+.detail-left{display:flex;gap:12px;align-items:center}
+.detail-avatar{width:56px;height:56px;border-radius:12px;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--text)}
+.detail-name{font-size:18px;font-weight:800}
+.detail-sub{font-size:12px;color:var(--muted);text-transform:uppercase}
+.detail-chart-wrap{background:linear-gradient(180deg,rgba(255,255,255,.01),rgba(0,0,0,.06));border-radius:14px;padding:10px;margin:12px 0;position:relative}
+.detail-chart{width:100%;height:320px;display:block;border-radius:8px;background:transparent}
+.chart-controls{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:8px}
+.chart-btn{background:rgba(255,255,255,.96);border:none;padding:6px 8px;border-radius:6px;cursor:pointer;font-weight:700}
+.chart-btn.active{background:rgba(255,255,255,1)}
+.detail-actions{display:flex;align-items:center;gap:12px;margin-top:10px}
+.qty-input{width:88px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.04);background:transparent;color:var(--text)}
+.action-buy{background:var(--accent);border:none;padding:10px 14px;border-radius:10px;color:#052224;font-weight:900;cursor:pointer}
+.action-sell{background:#ff5b5b;border:none;padding:10px 14px;border-radius:10px;color:white;font-weight:900;cursor:pointer}
+.action-sip{background:rgba(47,213,159,.08);border:1px solid rgba(47,213,159,.12);padding:10px 14px;border-radius:10px;color:var(--accent);font-weight:900;cursor:pointer}
+.detail-tabs{display:flex;gap:12px;margin-top:18px}
+.detail-tab{background:transparent;border:none;color:var(--muted);padding:8px 10px;border-radius:8px;cursor:pointer}
+.detail-tab.active{color:var(--text);border-bottom:2px solid var(--accent)}
+.empty{padding:18px;color:var(--muted)}
+/* ensure lists visible */
+html,body,#app,.app-container{min-height:100vh}
+  </style>
 </head>
 <body>
-  <!-- Header -->
   <header id="appHeader" class="app-header" role="banner">
     <div class="header-left">
       <button id="logoBtn" class="logo-btn" aria-label="Logo">
-        <!-- Inline minimal SVG logo; replace with your PNG if needed -->
+        <!-- small placeholder PNG-like square -->
         <svg width="56" height="56" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <rect width="100" height="100" rx="16" fill="#2c9686"></rect>
-          <g transform="translate(14,14)" fill="white">
-            <path d="M20 46 L40 20 L48 28 L28 58 Z" opacity="0.95"></path>
-            <path d="M64 20 L84 40 L74 50 L56 32 Z" opacity="0.95"></path>
-          </g>
+          <g transform="translate(14,14)" fill="white"><path d="M20 46 L40 20 L48 28 L28 58 Z" opacity="0.95"></path></g>
         </svg>
       </button>
     </div>
@@ -33,9 +84,7 @@
     </div>
   </header>
 
-  <!-- Main -->
   <main id="app" class="app-container">
-    <!-- Assets Card -->
     <section class="assets-card" aria-label="My assets">
       <div class="assets-left">
         <div class="assets-label">MY ASSETS</div>
@@ -47,14 +96,12 @@
       </div>
     </section>
 
-    <!-- Tabs -->
     <nav class="tabs" role="tablist" aria-label="Main tabs">
       <button class="tab active" role="tab" data-tab="stocks" id="tabStocks">Stocks</button>
       <button class="tab" role="tab" data-tab="funds" id="tabFunds">Funds</button>
       <button class="tab" role="tab" data-tab="portfolio" id="tabPortfolio">Portfolio</button>
     </nav>
 
-    <!-- Sections -->
     <section id="stocksSection" class="section active-section" aria-labelledby="tabStocks">
       <h2 class="section-title">Buy Stocks</h2>
       <div id="stocksList" class="list" aria-live="polite"></div>
@@ -71,17 +118,14 @@
     </section>
   </main>
 
-  <!-- Bottom pill nav -->
   <div class="bottom-pill" role="navigation" aria-label="Bottom navigation">
     <button class="pill-btn active" data-tab="stocks">📈 Stocks</button>
     <button class="pill-btn" data-tab="funds">📊 Funds</button>
     <button class="pill-btn" data-tab="portfolio">📁 Portfolio</button>
   </div>
 
-  <!-- Detail overlay (full-screen) -->
   <div id="detailOverlay" class="detail-overlay" hidden>
     <button id="closeDetail" class="detail-close" aria-label="Close detail">✕</button>
-
     <div class="detail-header">
       <div class="detail-left">
         <div id="detailAvatar" class="detail-avatar">RE</div>
@@ -90,7 +134,6 @@
           <div id="detailSub" class="detail-sub">Stock | RELIANCE</div>
         </div>
       </div>
-
       <div class="detail-right">
         <div id="detailPrice" class="detail-price">₹0</div>
         <div id="detailChangeBadge" class="detail-change-badge" hidden>▲ 0.00%</div>
@@ -125,6 +168,136 @@
     </div>
   </div>
 
-  <script src="script.js" defer></script>
-</body>
-      </html>
+  <script>
+/* -------------------------------
+   Self-contained JS — same logic
+   (rendering + DPR-safe canvas)
+   ------------------------------- */
+(function(){
+  'use strict';
+
+  const STOCKS = [
+    { id:'RELI', ticker:'RELIANCE', short:'RE', name:'Reliance Industries Ltd', price:1398.07 },
+    { id:'TATM', ticker:'TATAMOTORS', short:'TM', name:'Tata Motors', price:1006.98 },
+    { id:'ADGN', ticker:'ADANIGREEN', short:'AG', name:'Adani Green', price:1181.45 },
+    { id:'WIPR', ticker:'WIPRO', short:'W', name:'Wipro', price:1485.01 },
+    { id:'MRF', ticker:'MRF', short:'M', name:'MRF', price:1898.78 },
+    { id:'HDFC', ticker:'HDFC', short:'H', name:'HDFC', price:1846.28 },
+    { id:'AFFL', ticker:'AFFLE', short:'AF', name:'Affle 3i Ltd', price:410.22 }
+  ];
+
+  const FUNDS = [
+    { id:'EDEL', code:'EDEL', name:'Edelweiss Nifty Midcap150 Momentum 50 Index Fund', price:232.4 },
+    { id:'HDFM', code:'HDFCMID', name:'HDFC Mid Cap Fund', price:132.76 },
+    { id:'HDFSC', code:'HDFCSM', name:'HDFC Small Cap Fund', price:276.12 },
+    { id:'NIPL', code:'NIPPL', name:'Nippon India Large Cap Fund', price:219.33 },
+    { id:'SBIL', code:'SBIL', name:'SBI Large Cap Fund', price:189.44 },
+    { id:'NIPM', code:'NIPPM', name:'Nippon India Mid Cap Fund', price:160.55 },
+    { id:'NIPS', code:'NIPPS', name:'Nippon India Small Cap Fund', price:102.97 },
+    { id:'HDFLC', code:'HDFLC', name:'HDFC Large Cap Fund', price:321.21 }
+  ];
+
+  const STORAGE_KEY = 'ny_holdings_v1';
+  function loadHoldings(){ try{ const raw = localStorage.getItem(STORAGE_KEY); return raw?JSON.parse(raw):{stocks:{},funds:{}} }catch(e){console.error('loadHoldings',e); return {stocks:{},funds:{}} } }
+  function saveHoldings(h){ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(h)); }catch(e){console.error('saveHoldings',e);} }
+  let holdings = loadHoldings();
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  function formatINR(n){ if(typeof n!=='number') n = Number(n)||0; return '₹'+n.toLocaleString('en-IN',{maximumFractionDigits:2,minimumFractionDigits:2}); }
+
+  function computeMockPLPercent(current, avg){ if(!avg||avg===0) return 0; return ((current-avg)/avg)*100; }
+
+  function renderStocks(){
+    const root = $('#stocksList'); if(!root){ console.error('stocksList missing'); return; }
+    root.innerHTML = '';
+    STOCKS.forEach(stock => {
+      const el = document.createElement('div'); el.className='item';
+      const owned = holdings.stocks[stock.short];
+      const ownedHtml = owned ? `<div style="margin-top:8px;color:var(--muted);font-weight:700">Qty: ${owned.qty} @ ${formatINR(owned.avg)}</div>` : '';
+      el.innerHTML = `<div class="left"><div class="avatar">${stock.short}</div><div class="meta"><div class="name">${stock.name}</div><div class="sub">Stock | ${stock.ticker}</div>${ownedHtml}</div></div><div class="price">${formatINR(stock.price)} ${owned?'<small>owned</small>':''}</div>`;
+      el.addEventListener('click', ()=>openDetail('stock', stock.id));
+      root.appendChild(el);
+    });
+  }
+
+  function renderFunds(){
+    const root = $('#fundsList'); if(!root){ console.error('fundsList missing'); return; }
+    root.innerHTML='';
+    FUNDS.forEach(fund => {
+      const el=document.createElement('div'); el.className='item';
+      const owned = holdings.funds[fund.code];
+      const ownedHtml = owned ? `<div style="margin-top:8px;color:var(--muted);font-weight:700">Units: ${owned.units} @ ${formatINR(owned.avg)}</div>` : '';
+      el.innerHTML = `<div class="left"><div class="avatar">${fund.code.substring(0,2)}</div><div class="meta"><div class="name">${fund.name}</div><div class="sub">Fund | ${fund.code}</div>${ownedHtml}</div></div><div class="price">${formatINR(fund.price)}</div>`;
+      el.addEventListener('click', ()=>openDetail('fund', fund.id));
+      root.appendChild(el);
+    });
+  }
+
+  function renderPortfolio(){
+    const root = $('#portfolioList'); if(!root){ console.error('portfolioList missing'); return; }
+    root.innerHTML='';
+    const stkKeys = Object.keys(holdings.stocks||{}), fundKeys = Object.keys(holdings.funds||{});
+    if(stkKeys.length===0 && fundKeys.length===0){ root.innerHTML='<div class="empty">You own nothing yet. Buy stocks or funds to see them here.</div>'; return; }
+    stkKeys.forEach(sym=>{
+      const h=holdings.stocks[sym]; const s=STOCKS.find(x=>x.short===sym); if(!s) return;
+      const pl = computeMockPLPercent(s.price,h.avg); const arrow = pl>=0?'▲':'▼'; const col = pl>=0?'var(--accent)':'#ff5b5b';
+      const el=document.createElement('div'); el.className='item';
+      el.innerHTML = `<div class="left"><div class="avatar">${s.short}</div><div class="meta"><div class="name">${s.name}</div><div class="sub">Stock | ${s.ticker}</div><div style="margin-top:8px;color:var(--muted);font-weight:700">Qty: ${h.qty} @ ${formatINR(h.avg)}</div></div></div><div style="text-align:right"><div class="price">${formatINR(s.price)}</div><div style="margin-top:8px;color:${col};font-weight:800">${arrow} ${Math.abs(pl).toFixed(2)}%</div></div>`;
+      el.addEventListener('click', ()=>openDetail('stock', s.id));
+      root.appendChild(el);
+    });
+    fundKeys.forEach(code=>{
+      const h=holdings.funds[code]; const f=FUNDS.find(x=>x.code===code); if(!f) return;
+      const el=document.createElement('div'); el.className='item';
+      el.innerHTML = `<div class="left"><div class="avatar">${f.code.substring(0,2)}</div><div class="meta"><div class="name">${f.name}</div><div class="sub">Fund | ${f.code}</div><div style="margin-top:8px;color:var(--muted);font-weight:700">Units: ${h.units} @ ${formatINR(h.avg)}</div></div></div><div class="price">${formatINR(f.price)}</div>`;
+      el.addEventListener('click', ()=>openDetail('fund', f.id));
+      root.appendChild(el);
+    });
+  }
+
+  function updateAssetsCard(){
+    let total=0, holdingsCount=0;
+    Object.keys(holdings.stocks||{}).forEach(sym=>{
+      const h=holdings.stocks[sym], s=STOCKS.find(x=>x.short===sym); if(!s) return; total+=s.price*h.qty; holdingsCount+=h.qty;
+    });
+    Object.keys(holdings.funds||{}).forEach(code=>{
+      const h=holdings.funds[code], f=FUNDS.find(x=>x.code===code); if(!f) return; total+=f.price*h.units; holdingsCount+=h.units;
+    });
+    $('#assetsValue').textContent = formatINR(total);
+    $('#assetsHoldings').textContent = 'Holdings: ' + holdingsCount;
+    const change = parseFloat(((Math.random()-0.5)*200).toFixed(2));
+    const pct = total>0?((change/total)*100).toFixed(2):'0.00';
+    $('#assetsChange').textContent = (change>=0?'+':'') + formatINR(change) + ' (' + (change>=0?'+':'') + pct + '%)';
+  }
+
+  function setActiveTab(tab){
+    $$('.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+    $$('.pill-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+    $('#stocksSection').hidden = tab!=='stocks';
+    $('#fundsSection').hidden = tab!=='funds';
+    $('#portfolioSection').hidden = tab!=='portfolio';
+  }
+  $$('.tab').forEach(b=>b.addEventListener('click', ()=>setActiveTab(b.dataset.tab)));
+  $$('.pill-btn').forEach(b=>b.addEventListener('click', ()=>setActiveTab(b.dataset.tab)));
+
+  const detailOverlay = $('#detailOverlay'), detailChartCanvas = $('#detailChart'); const detailState = { type:null, id:null, cache:{} };
+
+  function fitCanvasToContainer(canvas){
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.max(1, window.devicePixelRatio||1);
+    const w = Math.round(rect.width * dpr), h = Math.round(rect.height * dpr);
+    if(canvas.width !== w || canvas.height !== h){ canvas.width = w; canvas.height = h; canvas.style.width = rect.width + 'px'; canvas.style.height = rect.height + 'px'; }
+  }
+  function clearCanvas(canvas){ const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height); }
+  function drawGrid(ctx,w,h,lines=6){ ctx.save(); ctx.strokeStyle='rgba(255,255,255,0.03)'; ctx.lineWidth=1; for(let i=0;i<=lines;i++){ const y=(h/lines)*i+0.5; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); } ctx.restore(); }
+  function drawLine(ctx,points,w,h,color='rgba(47,213,159,1)'){ if(points.length<2) return; ctx.save(); ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth = Math.max(2, Math.round(Math.min(w,h)*0.008)); ctx.strokeStyle=color; ctx.beginPath(); ctx.moveTo(points[0].x, points[0].y); for(let i=1;i<points.length-1;i++){ const xc=(points[i].x+points[i+1].x)/2, yc=(points[i].y+points[i+1].y)/2; ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc); } ctx.lineTo(points[points.length-1].x, points[points.length-1].y); ctx.stroke(); ctx.restore(); }
+  function seriesToPoints(series,w,h,padding=24){ const max=Math.max(...series), min=Math.min(...series), span=max-min||1; const pts=[]; const innerW=w-padding*2, innerH=h-padding*2; for(let i=0;i<series.length;i++){ const x = padding + (i/(series.length-1))*innerW; const y = padding + innerH - ((series[i]-min)/span)*innerH; pts.push({x,y,v:series[i]}); } return pts; }
+  function generateMockSeries(base,points=100,vol=0.02){ const arr=[]; let p = base*(1+(Math.random()-0.5)*0.01); for(let i=0;i<points;i++){ const change = (Math.random()-0.5)*vol*base; p = Math.max(1, p+change); arr.push(parseFloat(p.toFixed(2))); } return arr; }
+
+  function drawDetailChart(rangeKey='1d'){
+    let base=100;
+    if(detailState.type==='stock'){ const s=STOCKS.find(x=>x.id===detailState.id); if(s) base=s.price; }
+    else if(detailState.type==='fund'){ const f=FUNDS.find(x=>x.id===detailState.id); if(f) base=f.price; }
+    let points=100;
+    if(rangeKey==='1w') points=200; if(rangeKey==='1m') points=300; if(rangeKey
