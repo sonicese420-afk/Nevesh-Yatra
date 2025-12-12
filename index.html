@@ -50,19 +50,14 @@
         <section id="stocksScreen" class="screen active-screen">
             <h2 class="screen-title">Stocks</h2>
 
-            <!-- Explore section -->
-            <div class="stock-list" id="stocksList">
-                <!-- JS will insert stock cards -->
-            </div>
+            <div class="stock-list" id="stocksList"></div>
         </section>
 
         <!-- FUNDS SCREEN -->
         <section id="fundsScreen" class="screen">
             <h2 class="screen-title">Mutual Funds</h2>
 
-            <div class="fund-list" id="fundsList">
-                <!-- JS will insert fund cards -->
-            </div>
+            <div class="fund-list" id="fundsList"></div>
         </section>
 
         <!-- PORTFOLIO SCREEN -->
@@ -97,12 +92,16 @@
             </div>
 
             <div id="tradeBox" class="trade-box hidden">
-                <input type="number" id="tradeInput" placeholder="Enter amount or quantity" />
+                <h3 id="tradeTitle">Trade</h3>
+                <input type="number" id="tradeInput" placeholder="Enter quantity" />
                 <button id="confirmTrade">Confirm</button>
             </div>
         </section>
 
     </main>
+
+    <!-- TOAST POPUP -->
+    <div id="toast" class="toast hidden">Message</div>
 
     <!-- BOTTOM NAVIGATION -->
     <nav class="bottom-nav">
@@ -114,4 +113,4 @@
     <!-- Link JS -->
     <script src="scripts/scripts.js"></script>
 </body>
-      </html>
+</html>
