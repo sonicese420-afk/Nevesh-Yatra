@@ -372,3 +372,9 @@ canvas {
     color: #1fa46e;
     font-weight: 600;
 }
+/* ============================
+   UTILITY HIDDEN CLASS
+============================ */
+.hidden {
+    display: none !important;
+}
