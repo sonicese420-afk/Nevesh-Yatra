@@ -1,0 +1,327 @@
+/* ============================
+   BASE STYLES
+============================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    background: #0f1e17; /* dark teal base */
+    color: white;
+    overflow-x: hidden;
+}
+
+/* ============================
+   HEADER
+============================ */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #123225;
+    border-bottom: 1px solid #1f3d31;
+}
+
+.left-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.app-logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+}
+
+.title-group .app-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.title-group .app-subtitle {
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+.profile-btn {
+    background: #1f4d39;
+    border: none;
+    color: white;
+    font-size: 22px;
+    padding: 6px 10px;
+    border-radius: 50%;
+}
+
+/* ============================
+   PROFILE PANEL
+============================ */
+.profile-panel {
+    position: fixed;
+    top: 0;
+    right: -80%;
+    width: 75%;
+    height: 100%;
+    background: #123225;
+    padding: 20px;
+    transition: 0.35s ease;
+    z-index: 1000;
+}
+
+.profile-panel h2 {
+    margin-bottom: 12px;
+}
+
+.add-money-btn {
+    width: 100%;
+    padding: 10px;
+    background: #1fa46e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.about-text {
+    margin-top: 20px;
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+.close-profile {
+    width: 100%;
+    padding: 10px;
+    background: #1f4d39;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    margin-top: 25px;
+}
+
+/* Slide Open */
+.profile-panel.active {
+    right: 0;
+}
+
+/* ============================
+   MAIN SCREENS
+============================ */
+.screen {
+    display: none;
+    padding: 15px;
+}
+
+.active-screen {
+    display: block;
+}
+
+.screen-title {
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+/* ============================
+   STOCK / FUND CARDS
+============================ */
+.stock-list, .fund-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.stock-card, .fund-card {
+    background: #123225;
+    padding: 14px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-logo {
+    width: 35px;
+    height: 35px;
+    background: #1f4d39;
+    border-radius: 8px;
+}
+
+.card-name {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.card-symbol {
+    font-size: 11px;
+    opacity: 0.6;
+}
+
+.card-price {
+    font-size: 16px;
+    font-weight: 600;
+    text-align: right;
+}
+
+.card-change {
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.green {
+    color: #16e07c;
+}
+
+.red {
+    color: #ff6767;
+}
+
+/* ============================
+   DETAIL SCREEN
+============================ */
+#detailScreen {
+    padding-bottom: 140px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+#detailName {
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+#detailPrice {
+    font-size: 18px;
+    opacity: 0.8;
+    margin-bottom: 15px;
+}
+
+/* Chart Proper Scaling */
+canvas {
+    width: 100% !important;
+    height: 260px !important;
+}
+
+/* Time Buttons */
+.time-buttons {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.time-buttons button {
+    flex: 1;
+    padding: 8px;
+    background: #1f3d31;
+    border: none;
+    border-radius: 6px;
+    color: white;
+}
+
+.time-buttons .active {
+    background: #1fa46e;
+}
+
+/* Trade Buttons */
+.trade-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.buy-btn, .sell-btn, .sip-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    color: white;
+}
+
+.buy-btn { background: #1fa46e; }
+.sell-btn { background: #ce2e48; }
+.sip-btn { background: #5179ff; }
+
+/* Trade Box */
+.trade-box {
+    margin-top: 15px;
+}
+
+.trade-box input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #0f1e17;
+    border: 1px solid #1f3d31;
+    border-radius: 6px;
+    color: white;
+}
+
+.trade-box button {
+    width: 100%;
+    padding: 10px;
+    background: #1fa46e;
+    border: none;
+    border-radius: 8px;
+    color: white;
+}
+
+/* ============================
+   PORTFOLIO SECTION
+============================ */
+#portfolioSummary {
+    background: #123225;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+#holdingsList .holding {
+    background: #123225;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+/* ============================
+   BOTTOM NAVIGATION
+============================ */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #123225;
+    padding: 8px 0;
+    display: flex;
+    justify-content: space-around;
+    border-top: 1px solid #1f3d31;
+}
+
+.nav-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: white;
+    padding: 10px 0;
+    font-size: 14px;
+}
+
+.nav-btn.active {
+    color: #1fa46e;
+    font-weight: 600;
+}
