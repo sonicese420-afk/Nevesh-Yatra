@@ -5,107 +5,132 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Nivesh Yatra — Demo</title>
 
-  <!-- Main stylesheet (cache-bust during testing if needed e.g. style.css?v=2) -->
-  <link rel="stylesheet" href="style.css" />
+  <!-- LINK styles.css -->
+  <link rel="stylesheet" href="styles.css" />
 
-  <!-- small meta tag so user can debug easily -->
-  <meta name="description" content="Nivesh Yatra demo: stocks, funds & portfolio (test build)" />
+  <!-- Chart.js CDN (for demo graphs) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="logoWrap">
-      <img id="siteLogo" alt="NY logo" src="logo.png" onerror="this.style.display='none'"/>
-      <div class="siteTitle">
-        <div class="brandShort">NY</div>
-        <div class="brandMain">Nivesh Yatra</div>
-        <div class="brandSub">Turning dreams into Assets.</div>
-      </div>
-      <div class="topicons">
-        <button class="iconBtn" id="toggleView" title="Toggle view">👁️</button>
-        <button class="iconBtn" id="alerts" title="Alerts">🔔</button>
-      </div>
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="logo-wrap" id="logoWrap">
+      <!-- PLACEHOLDER: replace inside with <img src="..."> for your logo -->
+      <div class="logo-badge">NY</div>
+    </div>
+    <div class="title-wrap">
+      <h1 class="app-title">Nivesh Yatra</h1>
+      <div class="app-sub">Turning dreams into Assets.</div>
+    </div>
+    <div class="header-actions">
+      <button id="toggleView" title="Toggle hide values">👁️</button>
+      <button id="notifications" title="Notifications">🔔</button>
     </div>
   </header>
 
-  <main id="appRoot">
-    <section class="assetsCard">
-      <div class="assetsLabel">MY ASSETS</div>
-      <div class="assetsRow">
-        <div class="assetsValue" id="assetsValue">₹0</div>
-        <div class="assetsChange" id="assetsChange">+₹0 (0.00%)</div>
-      </div>
-      <div class="assetsHoldings" id="assetsHoldings">Holdings: 0</div>
-    </section>
+  <!-- ASSETS CARD -->
+  <section class="assets-card" id="assetsCard">
+    <div class="assets-left">
+      <div class="assets-label">MY ASSETS</div>
+      <div id="totalValue" class="assets-value">₹0</div>
+      <div id="holdingsCount" class="assets-hold">Holdings: 0</div>
+    </div>
+    <div class="assets-right">
+      <div id="dailyChange" class="change-badge">+₹0 (0.00%)</div>
+    </div>
+  </section>
 
-    <nav class="tabs" role="tablist">
-      <button class="tab active" data-tab="stocks">Stocks</button>
-      <button class="tab" data-tab="funds">Funds</button>
-      <button class="tab" data-tab="portfolio">Portfolio</button>
-    </nav>
+  <!-- NAV TABS -->
+  <nav class="main-tabs" role="navigation">
+    <button class="tab active" data-tab="stocks">Stocks</button>
+    <button class="tab" data-tab="funds">Funds</button>
+    <button class="tab" data-tab="portfolio">Portfolio</button>
+  </nav>
 
-    <section id="listArea" class="listArea" aria-live="polite">
-      <h1 class="pageHeading">Buy Stocks</h1>
+  <!-- MAIN CONTENT -->
+  <main id="mainContent">
+    <h2 class="section-title">Buy Stocks</h2>
 
-      <!-- Items will be injected here by JS -->
-      <div id="itemsContainer" class="itemsContainer" role="list"></div>
-    </section>
-  </main>
-
-  <!-- Modal for item details (hidden by default) -->
-  <div id="detailModal" class="modal hidden" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modalContent">
-      <header class="modalHeader">
-        <div class="modalTitle">
-          <div id="modalBadge" class="modalBadge">RE</div>
-          <div>
-            <div id="modalName" class="modalName">Reliance Industries Ltd</div>
-            <div id="modalSub" class="modalSub">Stock | RELIANCE</div>
+    <!-- STOCK LIST -->
+    <div id="stockList" class="list">
+      <!--
+        INSERT STOCK ITEMS HERE:
+        Each item should be a .list-item with data-id and structure as in sample below
+        Sample item (already added via JS on first load):
+        <div class="list-item" data-symbol="RE" data-id="reliance">
+          <div class="list-left"><div class="avatar">RE</div></div>
+          <div class="list-middle">
+            <div class="name">Reliance Industries Ltd</div>
+            <div class="meta">Stock | RELIANCE</div>
+          </div>
+          <div class="list-right">
+            <div class="price">₹1,398.07</div>
           </div>
         </div>
-        <div class="modalCloseArea">
-          <div id="modalPrice" class="modalPrice">₹0.00</div>
-          <button id="closeModal" class="closeBtn">✕</button>
+      -->
+    </div>
+  </main>
+
+  <!-- BOTTOM NAV (floating) -->
+  <div class="bottom-nav">
+    <button class="bn active" data-tab="stocks">📈 Stocks</button>
+    <button class="bn" data-tab="funds">📊 Funds</button>
+    <button class="bn" data-tab="portfolio">📁 Portfolio</button>
+  </div>
+
+  <!-- STOCK DETAIL MODAL (full-page slide-up) -->
+  <div id="detailModal" class="modal hidden" role="dialog" aria-hidden="true">
+    <div class="modal-inner" role="document">
+      <header class="modal-head">
+        <div class="modal-head-left">
+          <div id="modalAvatar" class="avatar">RE</div>
+          <div>
+            <div id="modalTitle" class="modal-title">Reliance Industries Ltd</div>
+            <div id="modalSub" class="modal-sub">STOCK | RELIANCE</div>
+          </div>
         </div>
+        <button id="closeModal" class="modal-close">✕</button>
       </header>
 
-      <div class="modalChartWrap">
-        <canvas id="detailChart"></canvas>
-        <div class="periodButtons" id="periodButtons">
-          <button data-period="1D" class="periodBtn active">1D</button>
-          <button data-period="1W" class="periodBtn">1W</button>
-          <button data-period="1M" class="periodBtn">1M</button>
-          <button data-period="6M" class="periodBtn">6M</button>
-          <button data-period="1Y" class="periodBtn">1Y</button>
-        </div>
+      <!-- GRAPH AREA (fixed height to prevent stretch) -->
+      <div class="modal-chart-wrap">
+        <canvas id="stockChart" width="800" height="260"></canvas>
       </div>
 
-      <div class="tradeArea">
-        <label>Qty <input id="tradeQty" type="number" min="1" value="1" /></label>
-        <div class="tradeBtns">
+      <!-- timeframe buttons -->
+      <div class="timeframe">
+        <button class="tf active" data-range="1D">1D</button>
+        <button class="tf" data-range="1W">1W</button>
+        <button class="tf" data-range="1M">1M</button>
+        <button class="tf" data-range="6M">6M</button>
+        <button class="tf" data-range="1Y">1Y</button>
+      </div>
+
+      <!-- BUY / SELL / SIP controls -->
+      <div class="trade-controls">
+        <label>Qty <input id="tradeQty" type="number" min="1" value="1"></label>
+        <div class="trade-buttons">
           <button id="sellBtn" class="sell">SELL</button>
           <button id="buyBtn" class="buy">BUY</button>
           <button id="sipBtn" class="sip">SIP</button>
         </div>
       </div>
 
-      <div class="modalTabs">
-        <button class="mdTab active">Details</button>
-        <button class="mdTab">Orders</button>
-        <button class="mdTab">News</button>
+      <!-- tabs inside modal -->
+      <div class="modal-tabs">
+        <button class="m-tab active" data-tab="details">Details</button>
+        <button class="m-tab" data-tab="orders">Orders</button>
+        <button class="m-tab" data-tab="news">News</button>
+      </div>
+
+      <!-- content placeholder (details/orders/news) -->
+      <div id="modalContent" class="modal-content">
+        <div class="details-panel">No details yet.</div>
       </div>
     </div>
   </div>
 
-  <!-- small footer nav (floating) -->
-  <footer class="bottomNav">
-    <div class="navWrap">
-      <button class="navItem active" data-section="stocks">📈 Stocks</button>
-      <button class="navItem" data-section="funds">📊 Funds</button>
-      <button class="navItem" data-section="portfolio">📁 Portfolio</button>
-    </div>
-  </footer>
-
-  <!-- App JS (cache-bust when testing) -->
-  <script src="app.js"></script>
+  <!-- LINK script.js -->
+  <script src="script.js"></script>
 </body>
 </html>
