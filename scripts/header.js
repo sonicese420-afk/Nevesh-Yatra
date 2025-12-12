@@ -1,47 +1,47 @@
 // scripts/header.js
-// Defensive header adjustments: ensure only guest chip is visible and remove duplicates.
+// Aggressive header cleanup: remove/hide duplicate bell/profile elements.
 
-function forceHideElements() {
-  try {
-    // hide auth buttons group (if present)
-    const authBtns = document.getElementById('nyAuthBtns');
-    if (authBtns) authBtns.style.display = 'none';
+(function () {
+  function removeByPredicate() {
+    // remove by id/class list first (fast)
+    const ids = ['nyBellBtn', 'nyProfile', 'nyAvatarBtn', 'nyAuthBtns', 'app-header'];
+    ids.forEach(id => {
+      const el = document.getElementById(id) || document.querySelector('#' + id);
+      if (el) el.remove();
+    });
 
-    // hide the bell control if present
-    const bell = document.getElementById('nyBellBtn') || document.querySelector('.ny-icon-btn#nyBellBtn');
-    if (bell) bell.style.display = 'none';
+    // remove any button whose title/aria-label contains common words
+    const candidates = document.querySelectorAll('button,div[role="button"],a');
+    candidates.forEach(el => {
+      const t = (el.getAttribute('title') || '') + '|' + (el.getAttribute('aria-label') || '') + '|' + (el.textContent || '');
+      const lower = t.toLowerCase();
+      if (lower.includes('notify') || lower.includes('bell') || lower.includes('notification') || lower.includes('profile') || lower.includes('avatar') ) {
+        try { el.remove(); } catch(e) { el.style.display='none'; el.style.visibility='hidden'; }
+      }
+    });
 
-    // hide any logged-in profile wrapper
-    const profile = document.getElementById('nyProfile') || document.querySelector('.ny-profile');
-    if (profile) profile.style.display = 'none';
+    // remove any svg paths that look like a bell — fallback: hide parent nodes that contain 'bell' in SVG title
+    const svgs = document.querySelectorAll('svg, svg path');
+    svgs.forEach(s => {
+      const title = (s.getAttribute('title') || s.getAttribute('aria-label') || '').toLowerCase();
+      if (title.includes('bell')) {
+        const p = s.closest('button') || s.closest('div') || s.parentElement;
+        if (p) try { p.remove(); } catch(e){ p.style.display='none'; }
+      }
+    });
 
-    // hide avatar/button variations
-    const avatarBtn = document.getElementById('nyAvatarBtn') || document.querySelector('.ny-avatar') || document.querySelector('.half-human');
-    if (avatarBtn) avatarBtn.style.display = 'none';
-
-    // show guest chip if exists
-    const guest = document.getElementById('nyGuestChip') || document.querySelector('.ny-guest-chip');
+    // Ensure guest chip remains visible
+    const guest = document.getElementById('nyGuestChip') || document.querySelector('.ny-guest-chip') || document.querySelector('.ny-guest');
     if (guest) {
       guest.style.display = 'inline-flex';
-      guest.setAttribute('aria-pressed', 'false');
-      guest.setAttribute('tabindex', '0');
+      guest.style.visibility = 'visible';
     }
-
-    // defensive: hide alternate header if present
-    const altHeader = document.querySelector('.app-header');
-    if (altHeader) altHeader.style.display = 'none';
-
-  } catch (e) {
-    console.warn('header force-hide error', e);
   }
-}
 
-// run on DOM ready
-document.addEventListener('DOMContentLoaded', function () {
-  forceHideElements();
-
-  // If something else rerenders the header later (single-page), re-run once shortly after
-  setTimeout(forceHideElements, 400);
-  // final safety run
-  setTimeout(forceHideElements, 1200);
-});
+  // run ASAP after DOM ready
+  document.addEventListener('DOMContentLoaded', removeByPredicate);
+  // re-run later in case something re-renders the header
+  setTimeout(removeByPredicate, 350);
+  setTimeout(removeByPredicate, 1000);
+  setTimeout(removeByPredicate, 2500);
+})();
