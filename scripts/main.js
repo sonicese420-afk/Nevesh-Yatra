@@ -1,105 +1,130 @@
-/* scripts/main.js
-   Minimal page initializer for demo stocks/funds and modal behavior.
-   Keeps everything guarded with existence checks to avoid JS errors.
-*/
+/* scripts/main.js - demo behaviors: populate list, header handling, modal chart */
+
+/* sample stocks data */
+const SAMPLE_STOCKS = [
+  { id: 'reliance', symbol: 'RE', name: 'Reliance Industries Ltd', meta: 'STOCK | RELIANCE', price: 1398.07 },
+  { id: 'tatamotors', symbol: 'TM', name: 'Tata Motors', meta: 'STOCK | TATAMOTORS', price: 1006.98 },
+  { id: 'adani', symbol: 'AG', name: 'Adani Green', meta: 'STOCK | ADANIGREEN', price: 1181.45 }
+];
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Demo dataset (safe sample)
-  const demoStocks = [
-    { symbol: 'RE', name: 'Reliance Industries Ltd', tag: 'RELIANCE', price: 1398.07 },
-    { symbol: 'TM', name: 'Tata Motors', tag: 'TATAMOTORS', price: 1006.98 },
-    { symbol: 'AG', name: 'Adani Green', tag: 'ADANIGREEN', price: 1181.45 },
-    { symbol: 'WIP', name: 'Wipro', tag: 'WIPRO', price: 574.44 },
-    { symbol: 'MRF', name: 'MRF', tag: 'MRF', price: 1898.78 }
-  ];
+  // 1) Populate stocks list
+  const list = document.getElementById('stockList');
+  SAMPLE_STOCKS.forEach(s => {
+    const item = document.createElement('div');
+    item.className = 'list-item';
+    item.dataset.id = s.id;
 
-  // find the container where stock rows should go (use your element/class)
-  const listContainer = document.getElementById('nyList') || document.querySelector('.ny-stock-list');
-
-  if (listContainer) {
-    demoStocks.forEach(s => {
-      const row = document.createElement('div');
-      row.className = 'ny-stock-row';
-      row.innerHTML = `
-        <div class="ny-stock-left">
-          <div class="ny-stock-icon">${s.symbol.slice(0,2)}</div>
-          <div class="ny-stock-meta">
-            <div class="ny-stock-name">${s.name}</div>
-            <div class="ny-stock-tag">STOCK | ${s.tag}</div>
-          </div>
+    item.innerHTML = `
+      <div class="list-left">
+        <div class="avatar">${s.symbol.slice(0,2)}</div>
+        <div>
+          <div class="name">${s.name}</div>
+          <div class="meta">${s.meta}</div>
         </div>
-        <div class="ny-stock-right">
-          <div class="ny-stock-price">₹${Number(s.price).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
-        </div>
-      `;
-      // open modal on click (safe guard)
-      row.addEventListener('click', () => {
-        openStockModal(s);
-      });
-      listContainer.appendChild(row);
-    });
-  } else {
-    console.warn('No stock list container found (#nyList or .ny-stock-list).');
-  }
-
-  /* --------- Modal and trade controls (safe) --------- */
-
-  const modal = document.getElementById('nyModal') || document.getElementById('nyStockModal');
-  const modalContent = document.getElementById('modalContent') || document.getElementById('modalContent');
-  const closeX = document.querySelector('.ny-modal-close') || null;
-
-  function openStockModal(stock) {
-    // fallback: if no modal element, create a simple overlay
-    if (!modal) {
-      alert(`${stock.name}\nPrice: ₹${stock.price}`);
-      return;
-    }
-
-    // set content area (if exists)
-    const titleEl = modal.querySelector('.modal-stock-title');
-    if (titleEl) titleEl.textContent = `${stock.name}`;
-
-    const priceEl = modal.querySelector('.modal-stock-price');
-    if (priceEl) priceEl.textContent = `₹${stock.price}`;
-
-    // set qty default
-    const qtyInput = modal.querySelector('#tradeQty');
-    if (qtyInput) qtyInput.value = '1';
-
-    modal.classList.add('open');
-    document.body.classList.add('ny-modal-open');
-  }
-
-  // close handlers
-  if (closeX) {
-    closeX.addEventListener('click', closeModal);
-  }
-  if (modal) {
-    modal.addEventListener('click', (ev) => {
-      if (ev.target === modal) closeModal();
-    });
-  }
-  function closeModal() {
-    if (modal) {
-      modal.classList.remove('open');
-      document.body.classList.remove('ny-modal-open');
-    }
-  }
-
-  // trade buttons (demo)
-  const buyBtn = document.getElementById('buyBtn') || document.getElementById('buyBtnDemo') || document.querySelector('.buy');
-  const sellBtn = document.getElementById('sellBtn') || document.querySelector('.sell');
-  const sipBtn = document.getElementById('sipBtn') || document.querySelector('.sip');
-
-  [buyBtn, sellBtn, sipBtn].forEach(btn => {
-    if (btn) {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        alert(`${btn.textContent.trim()} action (demo).`);
-      });
-    }
+      </div>
+      <div class="list-right">
+        <div class="price">₹${s.price.toLocaleString(undefined,{minimumFractionDigits:2})}</div>
+      </div>
+    `;
+    item.addEventListener('click', () => openModal(s));
+    list.appendChild(item);
   });
 
-  // safe init complete
-  console.log('NY demo main initialized.');
+  // 2) Basic header controls
+  const guestChip = document.getElementById('nyGuestChip');
+  guestChip.addEventListener('click', e => {
+    // simulate login toggle: when clicked change name randomly
+    const n = Math.floor(Math.random()*900)+100;
+    document.getElementById('nyGuestName').textContent = 'Guest' + n;
+  });
+
+  // Hide duplicate header elements if present (defensive)
+  Array.from(document.querySelectorAll('header')).forEach((h,i) => { if (i>0) h.remove(); });
+
+  // 3) Modal + chart setup
+  const modal = document.getElementById('detailModal');
+  const closeBtn = document.getElementById('closeModal') || document.getElementById('closeModal');
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+  // Chart - create once
+  let stockChart = null;
+  const ctx = document.getElementById('stockChart')?.getContext('2d');
+
+  function makeChart(labels, data) {
+    if (!ctx) return;
+    if (stockChart) stockChart.destroy();
+
+    stockChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Price',
+          data,
+          fill: false,
+          borderColor: '#23de9a',
+          tension: 0.2,
+          pointRadius: 0,
+          borderWidth: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false, // chart container has fixed height in CSS
+        scales: {
+          x: { display: false },
+          y: {
+            grid: { color: 'rgba(255,255,255,0.04)' },
+            ticks: { color: 'rgba(255,255,255,0.7)' }
+          }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+
+  // open modal with data
+  function openModal(stock) {
+    document.getElementById('modalTitle').textContent = stock.name;
+    document.getElementById('modalSub').textContent = stock.meta;
+    document.getElementById('modalAvatar').textContent = stock.symbol.slice(0,2);
+    modal.classList.remove('hide');
+
+    // create simple sample price data that won't "stretch"
+    const labels = Array.from({length:30}, (_,i)=>i+1);
+    // generate a stable series around price
+    const base = stock.price;
+    const data = labels.map((_,i) => +(base + Math.sin(i/3)*5 + (Math.random()-0.5)*4).toFixed(2));
+
+    makeChart(labels, data);
+    // lock body scroll while modal open
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal.classList.add('hide');
+    // destroy chart (optional)
+    if (stockChart) { stockChart.destroy(); stockChart = null; }
+    document.body.style.overflow = '';
+  }
+
+  // simple action buttons (non-functional demo)
+  document.getElementById('buyBtn')?.addEventListener('click', () => alert('BUY pressed (demo)'));
+  document.getElementById('sellBtn')?.addEventListener('click', () => alert('SELL pressed (demo)'));
+  document.getElementById('sipBtn')?.addEventListener('click', () => alert('SIP pressed (demo)'));
+
+  // bottom nav / tabs behaviour
+  document.querySelectorAll('.bn, .tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.bn, .tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // if needed, would switch contents (demo keeps it simple)
+    });
+  });
+
+  // close modal when click outside
+  modal.addEventListener('click', (ev) => {
+    if (ev.target === modal) closeModal();
+  });
 });
