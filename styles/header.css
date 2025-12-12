@@ -145,3 +145,29 @@
    Give some top margin to page content (so header doesn't cover it) */
 body { padding-top: 0; margin:0; background: #071211; color: #e7efe7; font-family: Inter, system-ui, Arial, sans-serif; }
 main, .page-content { padding: 20px; max-width:1200px; margin: 0 auto; }
+/* ---------- Header quick overrides (hide duplicates) ---------- */
+
+/* Force hide the bell button if present */
+#nyBellBtn, button#nyBellBtn, .ny-icon-btn#nyBellBtn {
+  display: none !important;
+}
+
+/* Force hide any "full profile" avatar area (logged-in) */
+#nyProfile, .ny-profile, .ny-profile.hidden {
+  display: none !important;
+}
+
+/* Ensure guest chip shows (if exist) */
+#nyGuestChip, .ny-guest-chip {
+  display: inline-flex !important;
+  align-items: center;
+}
+
+/* If there is a stray small avatar button (the half-human icon),
+   hide that too (cover several possible class/id names) */
+#nyAvatarBtn, .ny-avatar, .half-human {
+  display: none !important;
+}
+
+/* defensive: don't let the icon row push things off */
+.ny-right { align-items:center; gap:10px; }
